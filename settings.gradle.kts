@@ -28,4 +28,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "BChart"
 include(":app")
-include(":BrianChart")
+include(":BChart")

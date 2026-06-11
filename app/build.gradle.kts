@@ -59,7 +59,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     // Navigation Compose
     implementation(libs.androidx.navigation.compose)
+    implementation(project(":BChart"))
 
-    implementation(project(":BrianChart"))
     implementation(libs.kotlinx.serialization.json)
 }
