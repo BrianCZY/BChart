@@ -43,8 +43,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.brian.view.chart.AxisPadding
-import com.brian.view.chart.AxisPoints
 import kotlin.math.abs
 
 /**

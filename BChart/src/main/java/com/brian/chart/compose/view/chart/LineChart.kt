@@ -37,8 +37,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
-import com.brian.view.chart.AxisPadding
-import com.brian.view.chart.AxisPoints
 import java.math.BigDecimal
 
 private val TAG = "LineChart"

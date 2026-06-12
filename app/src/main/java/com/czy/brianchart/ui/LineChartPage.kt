@@ -51,9 +51,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.brian.chart.compose.widgets.chart.TrendChart
-import com.brian.chart.compose.widgets.chart.TrendChartConfig
-import com.brian.chart.compose.widgets.model.*
+import com.brian.chart.compose.view.chart.Axis
+import com.brian.chart.compose.view.chart.AxisType
+import com.brian.chart.compose.view.chart.Chunk
+import com.brian.chart.compose.view.chart.GridLine
+import com.brian.chart.compose.view.chart.LimitLine
+import com.brian.chart.compose.view.chart.Line
+import com.brian.chart.compose.view.chart.LineChart
+import com.brian.chart.compose.view.chart.LineChartData
+import com.brian.chart.compose.view.chart.Point
+import com.brian.chart.compose.view.chart.Renderer
+import com.brian.chart.compose.view.chart.TouchEventData
+import com.brian.chart.compose.view.chart.TouchEventType
 import com.czy.brianchart.ui.components.TopBar
 import com.czy.brianchart.ui.navigation.ChartNavigationActions
 import com.czy.brianchart.ui.theme.BrianChartTheme
@@ -134,10 +143,10 @@ fun LineChartView(modifier: Modifier, lineChartUIState: LineChartUIState, backCl
 @Composable
 fun LineChartWithTimer(modifier: Modifier) {
     var lineData by remember {
-        mutableStateOf(TrendChartConfig(
-            series = listOf(DataSeries(dataPoints = mutableListOf(), seriesColor = Color(0xff50E3C2))),
-            xAxis = ChartAxis(upperBound = 10000f, labelStep = 1000f, tickStep = 1000f),
-            yPrimaryAxis = ChartAxis(upperBound = 500f, lowerBound = -500f, labelStep = 100f, tickStep = 100f),
+        mutableStateOf(LineChartData(
+            lineList = listOf(Line(pointList = emptyList(), color = Color(0xff50E3C2))),
+            xAxis = Axis(max = 10000f, labelInterval = 1000f, scaleInterval = 1000f),
+            yLeftAxis = Axis(max = 500f, min = -500f, labelInterval = 100f, scaleInterval = 100f),
         ))
     }
     val scope = rememberCoroutineScope()
@@ -149,36 +158,36 @@ fun LineChartWithTimer(modifier: Modifier) {
         Button(modifier = Modifier.align(Alignment.TopEnd), onClick = {
             isRunning = !isRunning
             if (isRunning) {
-                lineData = lineData.copy(series = lineData.series?.map { it.copy(dataPoints = mutableListOf()) })
+                lineData = lineData.copy(lineList = lineData.lineList?.map { it.copy(pointList = emptyList()) })
                 job = scope.launch {
                     val amplitude = 200.0; val frequency = 0.2
                     timerFlow.take(1000).collect { i ->
                         val newPoints = (0 until 10).map { j ->
                             val x = (i * 10 + j).toDouble()
-                            Coordinate(x.toFloat(), (amplitude * sin(2 * Math.PI * frequency * x / 100.0)).toFloat())
+                            Point(x.toFloat(), (amplitude * sin(2 * Math.PI * frequency * x / 100.0)).toFloat())
                         }
-                        lineData = lineData.copy(series = lineData.series?.map { it.copy(dataPoints = it.dataPoints + newPoints) })
+                        lineData = lineData.copy(lineList = lineData.lineList?.map { it.copy(pointList = it.pointList + newPoints) })
                     }
                 }
             } else job?.cancel()
         }) { Text(if (isRunning) "Stop" else "Start") }
-        Text("Points: ${lineData.series?.first()?.dataPoints?.size}",
+        Text("Points: ${lineData.lineList?.first()?.pointList?.size}",
             modifier = Modifier.align(Alignment.TopEnd).height(40.dp).wrapContentHeight(Alignment.CenterVertically).padding(end = 100.dp),
             color = Color.Blue)
-        TrendChart(config = lineData)
+        LineChart(data = lineData)
     }
 }
 
 @Composable
 fun ChartPading(modifier: Modifier) {
     Row(modifier = modifier.padding(8.dp)) {
-        TrendChart(config = TrendChartConfig(series = null,
-            xAxis = ChartAxis(upperBound = 6f, lowerBound = 0f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 1f, labelFontSize = 14.sp, showLabels = false),
-            yPrimaryAxis = ChartAxis(upperBound = 4.0f, lowerBound = -4f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 2f, labelStep = 2f, labelFontSize = 14.sp, origin = 3f),
+        LineChart(data = LineChartData(lineList = null,
+            xAxis = Axis(max = 6f, min = 0f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 1f, labelTextSize = 14.sp, isDrawLabel = false),
+            yLeftAxis = Axis(max = 4.0f, min = -4f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 2f, labelInterval = 2f, labelTextSize = 14.sp, position = 3f),
         ), modifier = Modifier.weight(1f))
-        TrendChart(config = TrendChartConfig(series = null,
-            xAxis = ChartAxis(upperBound = 6f, lowerBound = 0f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 1f, labelFontSize = 14.sp, showLabels = false),
-            yPrimaryAxis = ChartAxis(upperBound = 4.0f, lowerBound = -4f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 2f, labelStep = 2f, labelFontSize = 14.sp, origin = 3f),
+        LineChart(data = LineChartData(lineList = null,
+            xAxis = Axis(max = 6f, min = 0f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 1f, labelTextSize = 14.sp, isDrawLabel = false),
+            yLeftAxis = Axis(max = 4.0f, min = -4f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 2f, labelInterval = 2f, labelTextSize = 14.sp, position = 3f),
         ), modifier = Modifier.weight(1f))
     }
 }
@@ -186,81 +195,81 @@ fun ChartPading(modifier: Modifier) {
 @Composable
 fun ChartSelfDefine(modifier: Modifier) {
     val context = LocalContext.current
-    TrendChart(modifier = modifier, config = TrendChartConfig(series = getTestLineListSelfDefined(context),
-        xAxis = ChartAxis(upperBound = 500f, tickStep = 20f, labelStep = 100f, label = "", gridStyle = GridStyle(10f, lineWidth = 0.5.dp)),
-        yPrimaryAxis = ChartAxis(upperBound = 300f, tickStep = 10f, labelStep = 50f, label = "", gridStyle = GridStyle(10f, lineWidth = 0.5.dp)),
-        scrollEnabled = true))
+    LineChart(modifier = modifier, data = LineChartData(lineList = getTestLineListSelfDefined(context),
+        xAxis = Axis(max = 500f, scaleInterval = 20f, labelInterval = 100f, name = "", gridLine = GridLine(10f, width = 0.5.dp)),
+        yLeftAxis = Axis(max = 300f, scaleInterval = 10f, labelInterval = 50f, name = "", gridLine = GridLine(10f, width = 0.5.dp)),
+        isScroll = true))
 }
 
 @Composable
 fun Chart10(modifier: Modifier) {
-    val list = getTestLineList().map { it.copy(areaFillEnabled = true) }.toMutableList()
-    TrendChart(modifier = modifier.padding(2.dp), config = TrendChartConfig(series = list,
-        xAxis = ChartAxis(upperBound = 500f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false),
-        yPrimaryAxis = ChartAxis(upperBound = 300f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false)))
+    val list = getTestLineList().map { it.copy(isDrawArea = true) }.toMutableList()
+    LineChart(modifier = modifier.padding(2.dp), data = LineChartData(lineList = list,
+        xAxis = Axis(max = 500f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false),
+        yLeftAxis = Axis(max = 300f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false)))
 }
 
 @Composable
 fun Chart9(modifier: Modifier) {
-    TrendChart(modifier = modifier.padding(2.dp), config = TrendChartConfig(series = getTestLineList(), autoFit = true,
-        xAxis = ChartAxis(upperBound = 500f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false),
-        yPrimaryAxis = ChartAxis(upperBound = 300f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false)))
+    LineChart(modifier = modifier.padding(2.dp), data = LineChartData(lineList = getTestLineList(), isSelfAdaptation = true,
+        xAxis = Axis(max = 500f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false),
+        yLeftAxis = Axis(max = 300f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false)))
 }
 
 @Composable
 fun Chart8(modifier: Modifier) {
-    TrendChart(modifier = modifier.padding(2.dp), config = TrendChartConfig(
-        xAxis = ChartAxis(upperBound = 8f, lowerBound = -0f, origin = 0f, tickStep = 1f, labelStep = 1f, label = ""),
-        yPrimaryAxis = ChartAxis(upperBound = 0f, tickStep = 10f, labelStep = 10f, origin = 0f, label = "", lowerBound = -80f)))
+    LineChart(modifier = modifier.padding(2.dp), data = LineChartData(
+        xAxis = Axis(max = 8f, min = -0f, position = 0f, scaleInterval = 1f, labelInterval = 1f, name = ""),
+        yLeftAxis = Axis(max = 0f, scaleInterval = 10f, labelInterval = 10f, position = 0f, name = "", min = -80f)))
 }
 
 @Composable
 fun Chart7(modifier: Modifier) {
-    TrendChart(modifier = modifier.padding(2.dp), config = TrendChartConfig(
-        xAxis = ChartAxis(upperBound = 0.833f, lowerBound = -0f, origin = 0f, tickStep = 0.1f, labelStep = 0.1f, label = ""),
-        yPrimaryAxis = ChartAxis(upperBound = 0.02f, tickStep = 0.003f, labelStep = 0.003f, origin = 0f, label = "", lowerBound = 0f)))
+    LineChart(modifier = modifier.padding(2.dp), data = LineChartData(
+        xAxis = Axis(max = 0.833f, min = -0f, position = 0f, scaleInterval = 0.1f, labelInterval = 0.1f, name = ""),
+        yLeftAxis = Axis(max = 0.02f, scaleInterval = 0.003f, labelInterval = 0.003f, position = 0f, name = "", min = 0f)))
 }
 
 @Composable
 fun Chart6(modifier: Modifier) {
-    TrendChart(modifier = modifier, config = TrendChartConfig(series = getTestPointLineList(),
-        xAxis = ChartAxis(upperBound = 800f, lowerBound = -400f, origin = 0f, tickStep = 100f, labelStep = 100f, label = ""),
-        yPrimaryAxis = ChartAxis(upperBound = 200f, tickStep = 50f, labelStep = 50f, origin = 0f, label = "", lowerBound = -300f)))
+    LineChart(modifier = modifier, data = LineChartData(lineList = getTestPointLineList(),
+        xAxis = Axis(max = 800f, min = -400f, position = 0f, scaleInterval = 100f, labelInterval = 100f, name = ""),
+        yLeftAxis = Axis(max = 200f, scaleInterval = 50f, labelInterval = 50f, position = 0f, name = "", min = -300f)))
 }
 
 @Composable
 fun Chart5(modifier: Modifier) {
     val limitLineList = getTestPlusOrMinusLimitLineList()
-    TrendChart(modifier = modifier, config = TrendChartConfig(series = getTestPlusOrMinusLineList(),
-        xAxis = ChartAxis(upperBound = 800f, lowerBound = -400f, origin = 0f, tickStep = 100f, labelStep = 100f, label = "", thresholdLines = limitLineList),
-        yPrimaryAxis = ChartAxis(upperBound = 200f, tickStep = 50f, labelStep = 50f, origin = 0f, label = "", lowerBound = -300f, thresholdLines = limitLineList)))
+    LineChart(modifier = modifier, data = LineChartData(lineList = getTestPlusOrMinusLineList(),
+        xAxis = Axis(max = 800f, min = -400f, position = 0f, scaleInterval = 100f, labelInterval = 100f, name = "", limitLineList = limitLineList),
+        yLeftAxis = Axis(max = 200f, scaleInterval = 50f, labelInterval = 50f, position = 0f, name = "", min = -300f, limitLineList = limitLineList)))
 }
 
 @Composable
 fun Chart4(modifier: Modifier) {
-    TrendChart(modifier = modifier.padding(2.dp).background(Color(0xffaabbcc)), config = TrendChartConfig(series = getTestLineList(),
-        xAxis = ChartAxis(upperBound = 500f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false),
-        yPrimaryAxis = ChartAxis(upperBound = 300f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false)))
+    LineChart(modifier = modifier.padding(2.dp).background(Color(0xffaabbcc)), data = LineChartData(lineList = getTestLineList(),
+        xAxis = Axis(max = 500f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false),
+        yLeftAxis = Axis(max = 300f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false)))
 }
 
 @Composable
 fun Chart3(modifier: Modifier) {
     val list = getTestLineList(); val listChunk = getTestChunkList(); val xLimitLineList = getTestXLimitLineList()
     val limitLineList = getTestLimitLineList()
-    TrendChart(modifier = modifier, config = TrendChartConfig(series = list,
-        xAxis = ChartAxis(upperBound = 500f, tickStep = 20f, labelStep = 100f, thresholdLines = xLimitLineList, coloredRegions = listChunk, label = "",
-            labelFormatter = ::settingLineChartLabelValue, gridStyle = GridStyle(10f)),
-        yPrimaryAxis = ChartAxis(upperBound = 300f, tickStep = 10f, labelStep = 50f, label = "",
-            coloredRegions = listChunk, thresholdLines = limitLineList, labelFormatter = ::settingLineChartLabelValue, gridStyle = GridStyle(10f))))
+    LineChart(modifier = modifier, data = LineChartData(lineList = list,
+        xAxis = Axis(max = 500f, scaleInterval = 20f, labelInterval = 100f, limitLineList = xLimitLineList, chunkList = listChunk, name = "",
+            settingLabelValue = ::settingLineChartLabelValue, gridLine = GridLine(10f)),
+        yLeftAxis = Axis(max = 300f, scaleInterval = 10f, labelInterval = 50f, name = "",
+            chunkList = listChunk, limitLineList = limitLineList, settingLabelValue = ::settingLineChartLabelValue, gridLine = GridLine(10f))))
 }
 
 @Composable
 fun Chart2(modifier: Modifier) {
     val list = getTestLineList(); val listChunk = getTestChunkList(); val xLimitLineList = getTestXLimitLineList()
     val limitLineList = getTestLimitLineList()
-    TrendChart(modifier = modifier, config = TrendChartConfig(series = list,
-        xAxis = ChartAxis(upperBound = 500f, tickStep = 20f, labelStep = 100f, thresholdLines = xLimitLineList, coloredRegions = listChunk, label = ""),
-        yPrimaryAxis = ChartAxis(upperBound = 300f, tickStep = 10f, labelStep = 50f, label = "", coloredRegions = listChunk, thresholdLines = limitLineList)))
+    LineChart(modifier = modifier, data = LineChartData(lineList = list,
+        xAxis = Axis(max = 500f, scaleInterval = 20f, labelInterval = 100f, limitLineList = xLimitLineList, chunkList = listChunk, name = ""),
+        yLeftAxis = Axis(max = 300f, scaleInterval = 10f, labelInterval = 50f, name = "", chunkList = listChunk, limitLineList = limitLineList)))
 }
 
 @Composable
@@ -269,49 +278,49 @@ fun Chart1(modifier: Modifier) {
     val listChunk1 = getTestChunkList1(); val listChunk2 = getTestChunkList2(); val listChunk3 = getTestChunkList3()
     val xLimitLineList1 = getTestXLimitLineList1(); val yLimitLineList1 = getTestYLimitLineList1()
     val yLimitLineList2 = getTestYLimitLineList2(); val yLimitLineList3 = getTestYLimitLineList3()
-    TrendChart(config = TrendChartConfig(series = list,
-        xAxis = ChartAxis(lowerBound = 10f, upperBound = 40f, tickStep = 5f, labelStep = 10f, thresholdLines = xLimitLineList1, coloredRegions = listChunkX, label = "x轴"),
-        ySecondaryAxis = ChartAxis(upperBound = 200f, tickStep = 25f, labelStep = 25f, label = "Load\nW", strokeColor = Color(0XFF18D276), coloredRegions = listChunk1, thresholdLines = yLimitLineList1),
-        yPrimaryAxis = ChartAxis(upperBound = 2000f, tickStep = 100f, labelStep = 500f, label = "  VO2\nml/min", strokeColor = Color(0XFFFF4E87), coloredRegions = listChunk2, thresholdLines = yLimitLineList2),
-        yRightAxis = ChartAxis(upperBound = 2000f, tickStep = 100f, labelStep = 500f, label = "  VCO2\nml/min", strokeColor = Color(0XFF058BF6), coloredRegions = listChunk3, thresholdLines = yLimitLineList3)
+    LineChart(data = LineChartData(lineList = list,
+        xAxis = Axis(min = 10f, max = 40f, scaleInterval = 5f, labelInterval = 10f, limitLineList = xLimitLineList1, chunkList = listChunkX, name = "x轴"),
+        yLeftInsideAxis = Axis(max = 200f, scaleInterval = 25f, labelInterval = 25f, name = "Load\nW", color = Color(0XFF18D276), chunkList = listChunk1, limitLineList = yLimitLineList1),
+        yLeftAxis = Axis(max = 2000f, scaleInterval = 100f, labelInterval = 500f, name = "  VO2\nml/min", color = Color(0XFFFF4E87), chunkList = listChunk2, limitLineList = yLimitLineList2),
+        yRightAxis = Axis(max = 2000f, scaleInterval = 100f, labelInterval = 500f, name = "  VCO2\nml/min", color = Color(0XFF058BF6), chunkList = listChunk3, limitLineList = yLimitLineList3)
     ), modifier = modifier)
 }
 
 @Composable @Preview fun ChartViewPreview() { BrianChartTheme { LineChartPage() } }
 @Composable @Preview(heightDp = 2000) fun ChartViewLongPreview() { BrianChartTheme { LineChartPage() } }
 
-fun getTestChunkList() = mutableListOf(ColoredRegion(40f, 60f), ColoredRegion(10f, 20f))
-fun getTestXChunkList() = mutableListOf(ColoredRegion(20f, 25f))
-fun getTestChunkList1() = mutableListOf(ColoredRegion(25f, 50f, fillColor = Color(0X2218D276)))
-fun getTestChunkList2() = mutableListOf(ColoredRegion(800f, 1000f, fillColor = Color(0X222FF4E87)))
-fun getTestChunkList3() = mutableListOf(ColoredRegion(1500f, 1800f, fillColor = Color(0X22058BF6)))
+fun getTestChunkList() = mutableListOf(Chunk(40f, 60f), Chunk(10f, 20f))
+fun getTestXChunkList() = mutableListOf(Chunk(20f, 25f))
+fun getTestChunkList1() = mutableListOf(Chunk(25f, 50f, color = Color(0X2218D276)))
+fun getTestChunkList2() = mutableListOf(Chunk(800f, 1000f, color = Color(0X222FF4E87)))
+fun getTestChunkList3() = mutableListOf(Chunk(1500f, 1800f, color = Color(0X22058BF6)))
 
-fun getTestLimitLineList() = mutableListOf(ThresholdLine(50f, dashed = true, lineWidth = 2.dp, lineColor = Color.Gray, caption = "测试"), ThresholdLine(15f))
-fun getTestPlusOrMinusLimitLineList() = mutableListOf(ThresholdLine(50f, dashed = true, lineWidth = 2.dp, lineColor = Color.Gray, caption = "测试"), ThresholdLine(-25f))
-fun getTestXLimitLineList() = mutableListOf(ThresholdLine(100f, dashed = true, lineWidth = 2.dp, lineColor = Color.Gray, caption = "测试"), ThresholdLine(20f))
-fun getTestXLimitLineList1() = mutableListOf(ThresholdLine(10f, dashed = true, lineWidth = 2.dp, lineColor = Color.Gray, caption = "测试"), ThresholdLine(20f))
-fun getTestYLimitLineList1() = mutableListOf(ThresholdLine(10f, dashed = true, lineWidth = 2.dp, lineColor = Color(0XFF18D276), caption = "限制线"))
-fun getTestYLimitLineList2() = mutableListOf(ThresholdLine(600f, dashed = true, lineWidth = 2.dp, lineColor = Color(0XFFFF4E87), caption = "限制线"))
-fun getTestYLimitLineList3() = mutableListOf(ThresholdLine(1200f, dashed = true, lineWidth = 2.dp, lineColor = Color(0XFF058BF6), caption = "限制线"))
+fun getTestLimitLineList() = mutableListOf(LimitLine(50f, isDashes = true, width = 2.dp, color = Color.Gray, text = "测试"), LimitLine(15f))
+fun getTestPlusOrMinusLimitLineList() = mutableListOf(LimitLine(50f, isDashes = true, width = 2.dp, color = Color.Gray, text = "测试"), LimitLine(-25f))
+fun getTestXLimitLineList() = mutableListOf(LimitLine(100f, isDashes = true, width = 2.dp, color = Color.Gray, text = "测试"), LimitLine(20f))
+fun getTestXLimitLineList1() = mutableListOf(LimitLine(10f, isDashes = true, width = 2.dp, color = Color.Gray, text = "测试"), LimitLine(20f))
+fun getTestYLimitLineList1() = mutableListOf(LimitLine(10f, isDashes = true, width = 2.dp, color = Color(0XFF18D276), text = "限制线"))
+fun getTestYLimitLineList2() = mutableListOf(LimitLine(600f, isDashes = true, width = 2.dp, color = Color(0XFFFF4E87), text = "限制线"))
+fun getTestYLimitLineList3() = mutableListOf(LimitLine(1200f, isDashes = true, width = 2.dp, color = Color(0XFF058BF6), text = "限制线"))
 
-fun getTestLineList(): MutableList<DataSeries> {
-    val p1 = listOf(Coordinate(10f, 210f), Coordinate(50f, 150f), Coordinate(100f, 130f), Coordinate(150f, 200f), Coordinate(200f, 80f), Coordinate(250f, 240f), Coordinate(300f, 20f), Coordinate(350f, 150f), Coordinate(400f, 50f), Coordinate(450f, 240f), Coordinate(500f, 140f))
+fun getTestLineList(): MutableList<Line> {
+    val p1 = listOf(Point(10f, 210f), Point(50f, 150f), Point(100f, 130f), Point(150f, 200f), Point(200f, 80f), Point(250f, 240f), Point(300f, 20f), Point(350f, 150f), Point(400f, 50f), Point(450f, 240f), Point(500f, 140f))
     return mutableListOf(
-        DataSeries(p1, seriesColor = Color(0xff4A90E2), smoothCurve = true, areaFillEnabled = true,
-            areaGradient = Brush.linearGradient(colors = listOf(Color(0xff4A90E2), Color(0x204A90E2)), start = Offset(0f, 0f), end = Offset(0f, Float.POSITIVE_INFINITY))),
-        DataSeries(p1, seriesColor = Color(0xffFF90E2)))
+        Line(p1, color = Color(0xff4A90E2), isDrawCubic = true, isDrawArea = true,
+            drawAreaBrush = Brush.linearGradient(colors = listOf(Color(0xff4A90E2), Color(0x204A90E2)), start = Offset(0f, 0f), end = Offset(0f, Float.POSITIVE_INFINITY))),
+        Line(p1, color = Color(0xffFF90E2)))
 }
 
-fun getTestLineListSelfDefined(context: Context): MutableList<DataSeries> {
+fun getTestLineListSelfDefined(context: Context): MutableList<Line> {
     val pts = mutableListOf(
-        Coordinate(100f, 50f, customRenderer = { ds, o -> drawSelfDefinedTextAndShape(ds, o, 100f, 50f, Color.Green) }),
-        Coordinate(200f, 120f, customRenderer = { ds, o -> drawSelfDefinedTextAndShape(ds, o, 200f, 120f, Color.Red) }),
-        Coordinate(300f, 220f, customRenderer = { ds, o -> drawSelfDefinedText(ds, o, 300f, 220f, Color.Black) }),
-        Coordinate(400f, 80f, customRenderer = { ds, o -> drawSelfDefinedBitmap(ds, BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_edit).asImageBitmap(), o) }),
-        Coordinate(500f, 200f, customRenderer = { ds, o -> drawSelfDefinedBitmap(ds, BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_edit).asImageBitmap(), o) }))
-    return mutableListOf(DataSeries(pts, seriesColor = Color(0xff50E3C2), dashedLine = true,
-        dashPattern = PathEffect.dashPathEffect(floatArrayOf(18f, 12f), 2f),
-        customPainter = { ds, series, offsetList -> series?.dataPoints?.forEachIndexed { i, pt -> offsetList?.getOrNull(i)?.let { pt.customRenderer?.invoke(ds, it) } } }))
+        Point(100f, 50f, selfDefinedValue = { ds, o -> drawSelfDefinedTextAndShape(ds, o, 100f, 50f, Color.Green) }),
+        Point(200f, 120f, selfDefinedValue = { ds, o -> drawSelfDefinedTextAndShape(ds, o, 200f, 120f, Color.Red) }),
+        Point(300f, 220f, selfDefinedValue = { ds, o -> drawSelfDefinedText(ds, o, 300f, 220f, Color.Black) }),
+        Point(400f, 80f, selfDefinedValue = { ds, o -> drawSelfDefinedBitmap(ds, BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_edit).asImageBitmap(), o) }),
+        Point(500f, 200f, selfDefinedValue = { ds, o -> drawSelfDefinedBitmap(ds, BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_edit).asImageBitmap(), o) }))
+    return mutableListOf(Line(pts, color = Color(0xff50E3C2), isDashes = true,
+        pathEffect = PathEffect.dashPathEffect(floatArrayOf(18f, 12f), 2f),
+        renderer = { ds, line, offsetList -> line?.pointList?.forEachIndexed { i, pt -> offsetList?.getOrNull(i)?.let { pt.selfDefinedValue?.invoke(ds, it) } } }))
 }
 
 fun drawSelfDefinedBitmap(ds: DrawScope, bitmap: ImageBitmap, offset: Offset) {
@@ -333,11 +342,11 @@ fun drawSelfDefinedText(ds: DrawScope, offset: Offset, x: Float, y: Float, color
     }
 }
 
-fun getTestLineList2(): MutableList<DataSeries> {
+fun getTestLineList2(): MutableList<Line> {
     return mutableListOf(
-        DataSeries(listOf(Coordinate(0f, 10f), Coordinate(5f, 100f), Coordinate(10f, 30f), Coordinate(15f, 200f), Coordinate(20f, 120f), Coordinate(25f, 10f), Coordinate(30f, 180f), Coordinate(35f, 100f), Coordinate(40f, 10f)), seriesColor = Color(0XFF18D276), axisTarget = AxisOrientation.SECONDARY_LEFT),
-        DataSeries(listOf(Coordinate(0f, 1000f), Coordinate(5f, 1000f), Coordinate(10f, 2000f), Coordinate(15f, 120f), Coordinate(20f, 1120f), Coordinate(25f, 1000f), Coordinate(30f, 180f), Coordinate(35f, 100f), Coordinate(40f, 1000f)), seriesColor = Color(0XFFFF4E87), smoothCurve = true, dashedLine = true),
-        DataSeries(listOf(Coordinate(0f, 1200f), Coordinate(5f, 100f), Coordinate(10f, 2200f), Coordinate(15f, 600f), Coordinate(20f, 120f), Coordinate(25f, 1500f), Coordinate(30f, 680f), Coordinate(35f, 200f), Coordinate(40f, 1500f)), seriesColor = Color(0XFF058BF6), axisTarget = AxisOrientation.RIGHT, smoothCurve = true))
+        Line(listOf(Point(0f, 10f), Point(5f, 100f), Point(10f, 30f), Point(15f, 200f), Point(20f, 120f), Point(25f, 10f), Point(30f, 180f), Point(35f, 100f), Point(40f, 10f)), color = Color(0XFF18D276), axisType = AxisType.LEFT_INSIDE),
+        Line(listOf(Point(0f, 1000f), Point(5f, 1000f), Point(10f, 2000f), Point(15f, 120f), Point(20f, 1120f), Point(25f, 1000f), Point(30f, 180f), Point(35f, 100f), Point(40f, 1000f)), color = Color(0XFFFF4E87), isDrawCubic = true, isDashes = true),
+        Line(listOf(Point(0f, 1200f), Point(5f, 100f), Point(10f, 2200f), Point(15f, 600f), Point(20f, 120f), Point(25f, 1500f), Point(30f, 680f), Point(35f, 200f), Point(40f, 1500f)), color = Color(0XFF058BF6), axisType = AxisType.RIGHT, isDrawCubic = true))
 }
 
 fun drawableToBitmap(drawable: Drawable? = null): ImageBitmap? {
@@ -347,15 +356,15 @@ fun drawableToBitmap(drawable: Drawable? = null): ImageBitmap? {
     return bitmap.asImageBitmap()
 }
 
-fun getTestPlusOrMinusLineList(): MutableList<DataSeries> {
-    val p1 = mutableListOf<Coordinate>().apply { for (i in 0..20) { add(Coordinate(Random.nextInt(-500, 500).toFloat(), Random.nextInt(-200, 200).toFloat())) } }
-    val p2 = mutableListOf<Coordinate>().apply { for (i in -500..500 step 50) { add(Coordinate(i.toFloat(), Random.nextInt(-200, 200).toFloat())) } }
-    return mutableListOf(DataSeries(p1, seriesColor = Color(0xff50E3C2), smoothCurve = true), DataSeries(p2, seriesColor = Color(0xff4A90E2), smoothCurve = true))
+fun getTestPlusOrMinusLineList(): MutableList<Line> {
+    val p1 = mutableListOf<Point>().apply { for (i in 0..20) { add(Point(Random.nextInt(-500, 500).toFloat(), Random.nextInt(-200, 200).toFloat())) } }
+    val p2 = mutableListOf<Point>().apply { for (i in -500..500 step 50) { add(Point(i.toFloat(), Random.nextInt(-200, 200).toFloat())) } }
+    return mutableListOf(Line(p1, color = Color(0xff50E3C2), isDrawCubic = true), Line(p2, color = Color(0xff4A90E2), isDrawCubic = true))
 }
 
-fun getTestPointLineList() = mutableListOf(DataSeries(
-    listOf(Coordinate(10f, 210f), Coordinate(50f, 150f), Coordinate(100f, 130f), Coordinate(150f, 200f), Coordinate(200f, 80f), Coordinate(250f, 240f), Coordinate(300f, 20f), Coordinate(350f, 150f), Coordinate(400f, 50f), Coordinate(450f, 240f), Coordinate(500f, 140f)),
-    strokeWidth = 2.dp, seriesColor = Color(0xff4A90E2), smoothCurve = true, showPoints = true, showPath = false))
+fun getTestPointLineList() = mutableListOf(Line(
+    listOf(Point(10f, 210f), Point(50f, 150f), Point(100f, 130f), Point(150f, 200f), Point(200f, 80f), Point(250f, 240f), Point(300f, 20f), Point(350f, 150f), Point(400f, 50f), Point(450f, 240f), Point(500f, 140f)),
+    width = 2.dp, color = Color(0xff4A90E2), isDrawCubic = true, isPoints = true, isDrawPath = false))
 
 fun settingLineChartLabelValue(value: Float): String = "${if (value.toInt().toFloat() == value) value.toInt() else value}T"
 
@@ -366,11 +375,11 @@ fun LineChartPreview() {
         val listChunk1 = getTestChunkList1(); val listChunk2 = getTestChunkList2(); val listChunk3 = getTestChunkList3()
         val xLimitLineList1 = getTestXLimitLineList1(); val yLimitLineList1 = getTestYLimitLineList1()
         val yLimitLineList2 = getTestYLimitLineList2(); val yLimitLineList3 = getTestYLimitLineList3()
-        TrendChart(config = TrendChartConfig(series = list,
-            xAxis = ChartAxis(lowerBound = 10f, upperBound = 40f, tickStep = 5f, labelStep = 10f, thresholdLines = xLimitLineList1, coloredRegions = listChunkX, label = "x轴"),
-            ySecondaryAxis = ChartAxis(upperBound = 200f, tickStep = 25f, labelStep = 25f, label = "Load\nW", strokeColor = Color(0XFF18D276), coloredRegions = listChunk1, thresholdLines = yLimitLineList1),
-            yPrimaryAxis = ChartAxis(upperBound = 2000f, tickStep = 100f, labelStep = 500f, label = "  VO2\nml/min", strokeColor = Color(0XFFFF4E87), coloredRegions = listChunk2, thresholdLines = yLimitLineList2),
-            yRightAxis = ChartAxis(upperBound = 2000f, tickStep = 100f, labelStep = 500f, label = "  VCO2\nml/min", strokeColor = Color(0XFF058BF6), coloredRegions = listChunk3, thresholdLines = yLimitLineList3)))
+        LineChart(data = LineChartData(lineList = list,
+            xAxis = Axis(min = 10f, max = 40f, scaleInterval = 5f, labelInterval = 10f, limitLineList = xLimitLineList1, chunkList = listChunkX, name = "x轴"),
+            yLeftInsideAxis = Axis(max = 200f, scaleInterval = 25f, labelInterval = 25f, name = "Load\nW", color = Color(0XFF18D276), chunkList = listChunk1, limitLineList = yLimitLineList1),
+            yLeftAxis = Axis(max = 2000f, scaleInterval = 100f, labelInterval = 500f, name = "  VO2\nml/min", color = Color(0XFFFF4E87), chunkList = listChunk2, limitLineList = yLimitLineList2),
+            yRightAxis = Axis(max = 2000f, scaleInterval = 100f, labelInterval = 500f, name = "  VCO2\nml/min", color = Color(0XFF058BF6), chunkList = listChunk3, limitLineList = yLimitLineList3)))
     } }
 }
 
@@ -378,9 +387,9 @@ fun LineChartPreview() {
 fun LineChartPreview2() {
     BrianChartTheme { Surface {
         val list = getTestLineList(); val listChunk = getTestChunkList(); val xLimitLineList = getTestXLimitLineList(); val limitLineList = getTestLimitLineList()
-        TrendChart(config = TrendChartConfig(series = list,
-            xAxis = ChartAxis(upperBound = 500f, tickStep = 20f, labelStep = 100f, thresholdLines = xLimitLineList, coloredRegions = listChunk, label = ""),
-            yPrimaryAxis = ChartAxis(upperBound = 300f, tickStep = 10f, labelStep = 50f, label = "", coloredRegions = listChunk, thresholdLines = limitLineList)))
+        LineChart(data = LineChartData(lineList = list,
+            xAxis = Axis(max = 500f, scaleInterval = 20f, labelInterval = 100f, limitLineList = xLimitLineList, chunkList = listChunk, name = ""),
+            yLeftAxis = Axis(max = 300f, scaleInterval = 10f, labelInterval = 50f, name = "", chunkList = listChunk, limitLineList = limitLineList)))
     } }
 }
 
@@ -388,18 +397,18 @@ fun LineChartPreview2() {
 fun LineChartPreview3() {
     BrianChartTheme { Surface {
         val list = getTestLineList(); val listChunk = getTestChunkList(); val xLimitLineList = getTestXLimitLineList(); val limitLineList = getTestLimitLineList()
-        TrendChart(config = TrendChartConfig(series = list,
-            xAxis = ChartAxis(upperBound = 500f, tickStep = 20f, labelStep = 100f, thresholdLines = xLimitLineList, coloredRegions = listChunk, label = "", labelFormatter = ::settingLineChartLabelValue, gridStyle = GridStyle(10f)),
-            yPrimaryAxis = ChartAxis(upperBound = 300f, tickStep = 10f, labelStep = 50f, label = "", coloredRegions = listChunk, thresholdLines = limitLineList, labelFormatter = ::settingLineChartLabelValue, gridStyle = GridStyle(10f))))
+        LineChart(data = LineChartData(lineList = list,
+            xAxis = Axis(max = 500f, scaleInterval = 20f, labelInterval = 100f, limitLineList = xLimitLineList, chunkList = listChunk, name = "", settingLabelValue = ::settingLineChartLabelValue, gridLine = GridLine(10f)),
+            yLeftAxis = Axis(max = 300f, scaleInterval = 10f, labelInterval = 50f, name = "", chunkList = listChunk, limitLineList = limitLineList, settingLabelValue = ::settingLineChartLabelValue, gridLine = GridLine(10f))))
     } }
 }
 
 @Composable @Preview(showSystemUi = false, showBackground = true, widthDp = 500, heightDp = 250)
 fun LineChartPreview4() {
     BrianChartTheme { Surface {
-        TrendChart(modifier = Modifier.padding(2.dp).background(Color(0xffaabbcc)), config = TrendChartConfig(series = getTestLineList(),
-            xAxis = ChartAxis(upperBound = 500f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false),
-            yPrimaryAxis = ChartAxis(upperBound = 300f, gridStyle = GridStyle(spacing = 10f, lineWidth = 0.5.dp), showLabels = false, showAxis = false)))
+        LineChart(modifier = Modifier.padding(2.dp).background(Color(0xffaabbcc)), data = LineChartData(lineList = getTestLineList(),
+            xAxis = Axis(max = 500f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false),
+            yLeftAxis = Axis(max = 300f, gridLine = GridLine(10f, width = 0.5.dp), isDrawLabel = false, isDrawAxis = false)))
     } }
 }
 
@@ -407,36 +416,36 @@ fun LineChartPreview4() {
 fun LineChartPreview5() {
     BrianChartTheme { Surface {
         val limitLineList = getTestPlusOrMinusLimitLineList()
-        TrendChart(config = TrendChartConfig(series = getTestPlusOrMinusLineList(),
-            xAxis = ChartAxis(upperBound = 800f, lowerBound = -400f, origin = 0f, tickStep = 100f, labelStep = 100f, label = "", thresholdLines = limitLineList),
-            yPrimaryAxis = ChartAxis(upperBound = 200f, tickStep = 50f, labelStep = 50f, origin = 0f, label = "", lowerBound = -300f, thresholdLines = limitLineList)))
+        LineChart(data = LineChartData(lineList = getTestPlusOrMinusLineList(),
+            xAxis = Axis(max = 800f, min = -400f, position = 0f, scaleInterval = 100f, labelInterval = 100f, name = "", limitLineList = limitLineList),
+            yLeftAxis = Axis(max = 200f, scaleInterval = 50f, labelInterval = 50f, position = 0f, name = "", min = -300f, limitLineList = limitLineList)))
     } }
 }
 
 @Composable @Preview(showSystemUi = false, showBackground = true, widthDp = 500, heightDp = 250)
 fun LineChartPreview6() {
     BrianChartTheme { Surface {
-        TrendChart(config = TrendChartConfig(series = getTestPointLineList(),
-            xAxis = ChartAxis(upperBound = 800f, lowerBound = -400f, origin = 0f, tickStep = 100f, labelStep = 100f, label = ""),
-            yPrimaryAxis = ChartAxis(upperBound = 200f, tickStep = 50f, labelStep = 50f, origin = 0f, label = "", lowerBound = -300f)))
+        LineChart(data = LineChartData(lineList = getTestPointLineList(),
+            xAxis = Axis(max = 800f, min = -400f, position = 0f, scaleInterval = 100f, labelInterval = 100f, name = ""),
+            yLeftAxis = Axis(max = 200f, scaleInterval = 50f, labelInterval = 50f, position = 0f, name = "", min = -300f)))
     } }
 }
 
 @Composable @Preview(showSystemUi = false, showBackground = true, widthDp = 500, heightDp = 250)
 fun LineChartPreview7() {
     BrianChartTheme { Surface {
-        TrendChart(modifier = Modifier.padding(2.dp), config = TrendChartConfig(
-            xAxis = ChartAxis(upperBound = 0.833f, lowerBound = -0f, origin = 0f, tickStep = 0.1f, labelStep = 0.1f, label = ""),
-            yPrimaryAxis = ChartAxis(upperBound = 0.02f, tickStep = 0.003f, labelStep = 0.003f, origin = 0f, label = "", lowerBound = 0f)))
+        LineChart(modifier = Modifier.padding(2.dp), data = LineChartData(
+            xAxis = Axis(max = 0.833f, min = -0f, position = 0f, scaleInterval = 0.1f, labelInterval = 0.1f, name = ""),
+            yLeftAxis = Axis(max = 0.02f, scaleInterval = 0.003f, labelInterval = 0.003f, position = 0f, name = "", min = 0f)))
     } }
 }
 
 @Composable @Preview(showSystemUi = false, showBackground = true, widthDp = 500, heightDp = 250)
 fun LineChartPreview8() {
     BrianChartTheme { Surface {
-        TrendChart(modifier = Modifier.padding(2.dp), config = TrendChartConfig(
-            xAxis = ChartAxis(upperBound = 8f, lowerBound = -0f, origin = 0f, tickStep = 1f, labelStep = 1f, label = ""),
-            yPrimaryAxis = ChartAxis(upperBound = 0f, tickStep = 10f, labelStep = 10f, origin = 0f, label = "", lowerBound = -80f)))
+        LineChart(modifier = Modifier.padding(2.dp), data = LineChartData(
+            xAxis = Axis(max = 8f, min = -0f, position = 0f, scaleInterval = 1f, labelInterval = 1f, name = ""),
+            yLeftAxis = Axis(max = 0f, scaleInterval = 10f, labelInterval = 10f, position = 0f, name = "", min = -80f)))
     } }
 }
 
@@ -444,8 +453,8 @@ fun LineChartPreview8() {
 fun LineChartSelfAdaptationPreview() {
     BrianChartTheme { Surface {
         val list = getTestPlusOrMinusLineList()
-        TrendChart(config = TrendChartConfig(series = list, xAxis = ChartAxis(origin = 0f, tickStep = 100f, labelStep = 100f, label = ""),
-            yPrimaryAxis = ChartAxis(tickStep = 50f, labelStep = 50f, origin = 0f, label = ""), autoFit = true))
+        LineChart(data = LineChartData(lineList = list, xAxis = Axis(position = 0f, scaleInterval = 100f, labelInterval = 100f, name = ""),
+            yLeftAxis = Axis(scaleInterval = 50f, labelInterval = 50f, position = 0f, name = ""), isSelfAdaptation = true))
     } }
 }
 
@@ -453,13 +462,13 @@ fun LineChartSelfAdaptationPreview() {
 fun LineChartPadingPreview() {
     BrianChartTheme { Surface {
         Row(modifier = Modifier.padding(8.dp)) {
-            TrendChart(config = TrendChartConfig(series = null,
-                xAxis = ChartAxis(upperBound = 6f, lowerBound = 0f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 1f, labelFontSize = 14.sp, showLabels = false),
-                yPrimaryAxis = ChartAxis(upperBound = 4.0f, lowerBound = -4f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 2f, labelStep = 2f, labelFontSize = 14.sp, origin = 3f),
+            LineChart(data = LineChartData(lineList = null,
+                xAxis = Axis(max = 6f, min = 0f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 1f, labelTextSize = 14.sp, isDrawLabel = false),
+                yLeftAxis = Axis(max = 4.0f, min = -4f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 2f, labelInterval = 2f, labelTextSize = 14.sp, position = 3f),
             ), modifier = Modifier.weight(1f))
-            TrendChart(config = TrendChartConfig(series = null,
-                xAxis = ChartAxis(upperBound = 6f, lowerBound = 0f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 1f, labelFontSize = 14.sp, showLabels = false),
-                yPrimaryAxis = ChartAxis(upperBound = 4.0f, lowerBound = -4f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 2f, labelStep = 2f, labelFontSize = 14.sp, origin = 3f),
+            LineChart(data = LineChartData(lineList = null,
+                xAxis = Axis(max = 6f, min = 0f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 1f, labelTextSize = 14.sp, isDrawLabel = false),
+                yLeftAxis = Axis(max = 4.0f, min = -4f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 2f, labelInterval = 2f, labelTextSize = 14.sp, position = 3f),
             ), modifier = Modifier.weight(1f))
         }
     } }
@@ -469,9 +478,9 @@ fun LineChartPadingPreview() {
 fun LineChartPadingSelfDefinePreview() {
     BrianChartTheme { Surface {
         Row(modifier = Modifier.padding(8.dp)) {
-            TrendChart(config = TrendChartConfig(series = null,
-                xAxis = ChartAxis(upperBound = 6f, lowerBound = 0f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 1f, labelStep = 1f, labelFontSize = 14.sp),
-                yPrimaryAxis = ChartAxis(upperBound = 4.0f, lowerBound = -4f, strokeColor = MaterialTheme.colorScheme.onSurfaceVariant, tickStep = 2f, labelStep = 2f, labelFontSize = 14.sp),
+            LineChart(data = LineChartData(lineList = null,
+                xAxis = Axis(max = 6f, min = 0f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 1f, labelInterval = 1f, labelTextSize = 14.sp),
+                yLeftAxis = Axis(max = 4.0f, min = -4f, color = MaterialTheme.colorScheme.onSurfaceVariant, scaleInterval = 2f, labelInterval = 2f, labelTextSize = 14.sp),
             ), modifier = Modifier.weight(1f).background(Color(0x10000000)))
         }
     } }
@@ -481,21 +490,21 @@ fun LineChartPadingSelfDefinePreview() {
 fun LineChartPreviewSelfDefined() {
     BrianChartTheme { Surface {
         val context = LocalContext.current
-        TrendChart(config = TrendChartConfig(series = getTestLineListSelfDefined(context),
-            xAxis = ChartAxis(upperBound = 500f, tickStep = 20f, labelStep = 100f, label = "", gridStyle = GridStyle(10f, lineWidth = 0.5.dp)),
-            yPrimaryAxis = ChartAxis(upperBound = 300f, tickStep = 10f, labelStep = 50f, label = "", gridStyle = GridStyle(10f, lineWidth = 0.5.dp)),
-            scrollEnabled = true))
+        LineChart(data = LineChartData(lineList = getTestLineListSelfDefined(context),
+            xAxis = Axis(max = 500f, scaleInterval = 20f, labelInterval = 100f, name = "", gridLine = GridLine(10f, width = 0.5.dp)),
+            yLeftAxis = Axis(max = 300f, scaleInterval = 10f, labelInterval = 50f, name = "", gridLine = GridLine(10f, width = 0.5.dp)),
+            isScroll = true))
     } }
 }
 
 @Composable @Preview(showSystemUi = false, showBackground = true, widthDp = 500, heightDp = 250)
 fun LineChartPreviewChunk() {
     BrianChartTheme { Surface {
-        TrendChart(config = TrendChartConfig(series = null,
-            xAxis = ChartAxis(upperBound = 500f, lowerBound = 200f, tickStep = 20f, labelStep = 100f,
-                coloredRegions = mutableListOf(ColoredRegion(200f, 300f, Color.Red.copy(alpha = 0.5f)), ColoredRegion(400f, 500f, Color.Blue.copy(alpha = 0.5f))), label = ""),
-            yPrimaryAxis = ChartAxis(upperBound = 800f, lowerBound = 300f, tickStep = 10f, labelStep = 50f,
-                coloredRegions = mutableListOf(ColoredRegion(400f, 420f, Color.Red.copy(alpha = 0.5f)), ColoredRegion(600f, 700f, Color.Blue.copy(alpha = 0.5f))), label = "")))
+        LineChart(data = LineChartData(lineList = null,
+            xAxis = Axis(max = 500f, min = 200f, scaleInterval = 20f, labelInterval = 100f,
+                chunkList = mutableListOf(Chunk(200f, 300f, Color.Red.copy(alpha = 0.5f)), Chunk(400f, 500f, Color.Blue.copy(alpha = 0.5f))), name = ""),
+            yLeftAxis = Axis(max = 800f, min = 300f, scaleInterval = 10f, labelInterval = 50f,
+                chunkList = mutableListOf(Chunk(400f, 420f, Color.Red.copy(alpha = 0.5f)), Chunk(600f, 700f, Color.Blue.copy(alpha = 0.5f))), name = "")))
     } }
 }
 
@@ -509,49 +518,49 @@ fun ChartWithTouchPreview() {
 @Composable
 fun ChartWithTouch(modifier: Modifier) {
     var config by remember {
-        mutableStateOf(TrendChartConfig(
-            series = listOf(DataSeries(dataPoints = mutableListOf(
-                Coordinate(0f, 10f), Coordinate(25f, 80f), Coordinate(50f, 40f), Coordinate(75f, 120f),
-                Coordinate(100f, 90f), Coordinate(125f, 160f), Coordinate(150f, 130f), Coordinate(175f, 200f), Coordinate(200f, 170f)),
-                seriesColor = Color(0xff4A90E2), smoothCurve = true, showPath = true)),
-            xAxis = ChartAxis(upperBound = 200f, lowerBound = 0f, tickStep = 20f, labelStep = 50f, label = "时间 (s)", thresholdLines = mutableListOf()),
-            yPrimaryAxis = ChartAxis(upperBound = 250f, lowerBound = 0f, tickStep = 25f, labelStep = 50f, label = "数值")))
+        mutableStateOf(LineChartData(
+            lineList = listOf(Line(pointList = mutableListOf(
+                Point(0f, 10f), Point(25f, 80f), Point(50f, 40f), Point(75f, 120f),
+                Point(100f, 90f), Point(125f, 160f), Point(150f, 130f), Point(175f, 200f), Point(200f, 170f)),
+                color = Color(0xff4A90E2), isDrawCubic = true, isDrawPath = true)),
+            xAxis = Axis(max = 200f, min = 0f, scaleInterval = 20f, labelInterval = 50f, name = "时间 (s)", limitLineList = mutableListOf()),
+            yLeftAxis = Axis(max = 250f, min = 0f, scaleInterval = 25f, labelInterval = 50f, name = "数值")))
     }
     var selectedX by remember { mutableStateOf<Float?>(200f) }
 
-    fun thresholdLinePainter(drawScope: DrawScope, start: Offset, end: Offset, line: ThresholdLine) {
+    fun thresholdLinePainter(drawScope: DrawScope, start: Offset, end: Offset, line: LimitLine) {
         drawScope.apply {
             drawLine(brush = Brush.linearGradient(colors = listOf(Color.Red, Color.Green), start = start, end = end),
-                start = start, end = end, strokeWidth = line.lineWidth.toPx())
-            drawCircle(color = Color.Cyan.copy(0.6f), radius = line.lineWidth.toPx() * 2, center = end)
+                start = start, end = end, strokeWidth = line.width.toPx())
+            drawCircle(color = Color.Cyan.copy(0.6f), radius = line.width.toPx() * 2, center = end)
             drawCircle(color = Color.White, radius = 2.dp.toPx(), center = end)
         }
     }
 
     fun updateThresholdLine(x: Float?) {
-        val min = config.xAxis.lowerBound; val max = config.xAxis.upperBound
+        val min = config.xAxis.min; val max = config.xAxis.max
         val clamped = x?.coerceIn(min, max)
-        val list = if (clamped != null) mutableListOf(ThresholdLine(clamped, lineColor = Color.Red, lineWidth = 2.dp, caption = "X=%.1f".format(clamped), customPainter = ::thresholdLinePainter)) else mutableListOf()
-        config = config.copy(xAxis = config.xAxis.copy(thresholdLines = list))
+        val list = if (clamped != null) mutableListOf(LimitLine(clamped, color = Color.Red, width = 2.dp, text = "X=%.1f".format(clamped), selfDefinedValue = ::thresholdLinePainter)) else mutableListOf()
+        config = config.copy(xAxis = config.xAxis.copy(limitLineList = list))
     }
 
     LaunchedEffect(Unit) { updateThresholdLine(selectedX) }
 
-    var selectedPoint by remember { mutableStateOf<Coordinate?>(null) }
+    var selectedPoint by remember { mutableStateOf<Point?>(null) }
     Column(modifier = modifier.padding(8.dp)) {
         Text(text = "X：${selectedX} selectedPoint：${selectedPoint}", style = MaterialTheme.typography.bodySmall, modifier = Modifier.align(Alignment.CenterHorizontally))
-        TrendChart(modifier = Modifier.fillMaxWidth().weight(1f), config = config.copy(onTouch = { payload: TouchPayload ->
-            updateThresholdLine(payload.dataX); selectedPoint = getClosestLinePoint(config.series, payload.dataX); selectedX = payload.dataX
-            when (payload.gesture) {
-                GestureEvent.TAP -> updateThresholdLine(selectedPoint?.x ?: payload.dataX)
-                GestureEvent.DRAG -> updateThresholdLine(payload.dataX)
-                GestureEvent.RELEASE -> updateThresholdLine(selectedPoint?.x ?: payload.dataX)
-                GestureEvent.PRESS -> {}
+        LineChart(modifier = Modifier.fillMaxWidth().weight(1f), data = config.copy(onTouch = { payload: TouchEventData ->
+            updateThresholdLine(payload.dataX); selectedPoint = getClosestLinePoint(config.lineList, payload.dataX); selectedX = payload.dataX
+            when (payload.eventType) {
+                TouchEventType.TAP -> updateThresholdLine(selectedPoint?.x ?: payload.dataX)
+                TouchEventType.MOVE -> updateThresholdLine(payload.dataX)
+                TouchEventType.UP -> updateThresholdLine(selectedPoint?.x ?: payload.dataX)
+                TouchEventType.DOWN -> {}
             }
         }))
     }
 }
 
-fun getClosestLinePoint(series: List<DataSeries>? = null, dataX: Float): Coordinate? {
-    return series?.flatMap { it.dataPoints }?.minByOrNull { abs(it.x - dataX) }
+fun getClosestLinePoint(lineList: List<Line>? = null, dataX: Float): Point? {
+    return lineList?.flatMap { it.pointList }?.minByOrNull { abs(it.x - dataX) }
 }

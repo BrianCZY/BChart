@@ -1,6 +1,5 @@
-package com.brian.view.chart
+package com.brian.chart.compose.view.chart
 
-import com.brian.chart.compose.view.chart.Point
 
 data class AxisPoints(
     val point0: Point = Point(),//左下角

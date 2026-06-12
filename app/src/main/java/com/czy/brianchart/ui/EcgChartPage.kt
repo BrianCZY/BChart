@@ -24,9 +24,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.brian.chart.compose.widgets.chart.EcgTrace
-import com.brian.chart.compose.widgets.model.*
-import com.czy.brianchart.data.testdata.RD2000_WAVE_IDATA_LIST
+import com.brian.chart.compose.view.chart.EcgChart
+import com.brian.chart.compose.view.chart.EcgChartData
+import com.brian.chart.compose.view.chart.GrideDataSet
+import com.brian.chart.compose.view.chart.LineDataSet
+import com.brian.chart.compose.view.chart.PointDataSet
 import com.czy.brianchart.ui.components.TopBar
 import com.czy.brianchart.ui.navigation.ChartNavigationActions
 import kotlinx.coroutines.Job
@@ -65,9 +67,9 @@ fun EcgChartView(ecgChartUIState: EcgChartUIState, modifier: Modifier, backClick
 
 @Composable
 fun EcgChartWithTimer(modifier: Modifier) {
-    var cfg by remember { mutableStateOf(EcgConfig(
-        waveforms = listOf(mutableListOf<Float>()),
-        lineStyle = EcgLineStyle(color = Color(0xff50E3C2)),
+    var cfg by remember { mutableStateOf(EcgChartData(
+        ecgWaveLists = listOf(mutableListOf<Float>()),
+        lineDataSet = LineDataSet(color = Color(0xff50E3C2)),
     )) }
     val scope = rememberCoroutineScope()
     val tf = remember { flow { var i = 0; while (true) { emit(i++); delay(10) } } }
@@ -77,43 +79,63 @@ fun EcgChartWithTimer(modifier: Modifier) {
         Button(modifier = Modifier.align(Alignment.TopEnd), onClick = {
             running = !running
             if (running) {
-                cfg = cfg.copy(waveforms = listOf(mutableListOf()))
+                cfg = cfg.copy(ecgWaveLists = listOf(mutableListOf()))
                 job = scope.launch {
                     val a = 200.0; val f = 0.2
                     tf.take(1000).collect { i ->
                         val pts = (0 until 10).map { j ->
                             (a * sin(2 * Math.PI * f * (i * 10 + j) / 100.0)).toFloat()
                         }
-                        cfg = cfg.copy(waveforms = listOf(cfg.waveforms?.get(0)?.plus(pts)?.toMutableList() ?: mutableListOf()))
+                        cfg = cfg.copy(ecgWaveLists = listOf(cfg.ecgWaveLists?.get(0)?.plus(pts)?.toMutableList() ?: mutableListOf()))
                     }
                 }
             } else job?.cancel()
         }) { Text(if (running) "Stop" else "Start") }
-        EcgTrace(config = cfg)
+        EcgChart(data = cfg)
     }
 }
 
 @Composable
 fun EcgChartSample(index: Int, modifier: Modifier) {
-    val cfg = ecgConfigs.getOrNull(index - 1) ?: EcgConfig()
-    EcgTrace(modifier = modifier, config = cfg)
+    val cfg = ecgConfigs.getOrNull(index - 1) ?: EcgChartData()
+    EcgChart(modifier = modifier, data = cfg)
 }
 
-private val ecgConfigs: List<EcgConfig> = (1..100).map { i ->
-    EcgConfig(
-        waveforms = listOf(RD2000_WAVE_IDATA_LIST.map { it.toFloat() }),
-        lineStyle = EcgLineStyle(
+// Simple test ECG data (simulated waveform)
+private val testEcgWaveData: List<Float> = run {
+    val data = mutableListOf<Float>()
+    // Generate a simple simulated ECG-like waveform
+    for (i in 0 until 500) {
+        val x = i.toDouble() / 500.0 * 2 * Math.PI
+        // Simulate P-QRS-T complex
+        val value = when {
+            i in 10..30 -> -0.1f + (i - 10).toFloat() / 20 * 0.3f // P wave
+            i in 40..60 -> 0.2f - (i - 40).toFloat() / 20 * 0.4f // Q wave
+            i in 60..80 -> -0.2f + (i - 60).toFloat() / 20 * 1.5f // R wave
+            i in 80..100 -> 1.3f - (i - 80).toFloat() / 20 * 1.5f // S wave
+            i in 100..130 -> -0.2f + (i - 100).toFloat() / 30 * 0.3f // T wave
+            else -> (Math.sin(x * 3) * 0.05).toFloat() // baseline noise
+        }
+        data.add(value)
+    }
+    data
+}
+
+private val ecgConfigs: List<EcgChartData> = (1..100).map { i ->
+    EcgChartData(
+        ecgWaveLists = listOf(testEcgWaveData),
+        lineDataSet = LineDataSet(
             color = if (i % 3 == 0) Color.Red else if (i % 3 == 1) Color.Blue else Color.Black,
-            thickness = when { i >= 20 -> 2.dp; i >= 10 -> 1.5.dp; else -> 1.dp },
-            samplesPerSecond = 100 + i * 10,
+            width = when { i >= 20 -> 2.dp; i >= 10 -> 1.5.dp; else -> 1.dp },
+            onSecondDataNum = 100 + i * 10,
         ),
-        gridStyle = EcgGridStyle(
-            visible = i % 5 != 0,
+        grideDataSet = GrideDataSet(
+            isDraw = i % 5 != 0,
             color = when { i >= 30 -> Color(0xFFCCCCCC); i >= 15 -> Color.LightGray; else -> Color.Gray },
-            lineWidth = when { i >= 25 -> 1.5.dp; i >= 12 -> 1.dp; else -> 0.5.dp },
+            width = when { i >= 25 -> 1.5.dp; i >= 12 -> 1.dp; else -> 0.5.dp },
         ),
-        dotStyle = EcgDotStyle(
-            visible = i % 7 != 0,
+        pointDataSet = PointDataSet(
+            isDraw = i % 7 != 0,
             color = when { i >= 40 -> Color(0xFFAAAAAA); i >= 20 -> Color.Gray; else -> Color.DarkGray },
             radius = when { i >= 35 -> 1.5.dp; i >= 18 -> 1.dp; else -> 0.5.dp },
         ),

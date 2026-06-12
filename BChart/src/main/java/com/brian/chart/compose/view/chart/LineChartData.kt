@@ -1,7 +1,5 @@
 package com.brian.chart.compose.view.chart
 
-import com.brian.view.chart.AxisPadding
-
 
 data class LineChartData(
     val lineList: List<Line>? = null,
