@@ -49,7 +49,7 @@ afterEvaluate {
                 from(components["release"]) // 这里引用 android 的 release 组件
 
                 groupId = "com.github.BrianCZY"
-                artifactId = "BrianChart"
+                artifactId = "BChart"
                 version = "v1.0.0"
 
                 // 可选：添加 POM 信息
