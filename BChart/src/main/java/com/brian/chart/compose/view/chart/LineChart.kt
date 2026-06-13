@@ -63,6 +63,7 @@ fun LineChart(
     val xAxisRaw by derivedStateOf { data?.xAxis ?: Axis() }
     val yLeftInsideAxis by derivedStateOf { data?.yLeftInsideAxis }
     val yLeftAxis by derivedStateOf { data?.yLeftAxis }
+    val yRightInsideAxis by derivedStateOf { data?.yRightInsideAxis }
     val yRightAxis by derivedStateOf { data?.yRightAxis }
     val isSelfAdaptation by derivedStateOf { data?.isSelfAdaptation == true }
     val isScroll by derivedStateOf { data?.isScroll }
@@ -74,9 +75,9 @@ fun LineChart(
     // 使用来自 data 的 xAxis（调用方负责就地更新 xAxis.limitLineList 来避免重建）
     val xAxis by derivedStateOf { xAxisRaw }
 
-    remember(lineList, xAxis, yLeftAxis, yLeftInsideAxis, yRightAxis, isSelfAdaptation) {
+    remember(lineList, xAxis, yLeftAxis, yLeftInsideAxis, yRightInsideAxis, yRightAxis, isSelfAdaptation) {
         if (isSelfAdaptation) {
-            selfAdaptation(xAxis, yLeftAxis, yLeftInsideAxis, yRightAxis, lineList)
+            selfAdaptation(xAxis, yLeftAxis, yLeftInsideAxis, yRightInsideAxis, yRightAxis, lineList)
 
         }
         ""
@@ -206,6 +207,25 @@ fun LineChart(
                                 }
                             }
                         }
+
+                        yRightInsideAxis?.let { yAxis ->
+                            val lineListNew = lines.filter { it.axisType == LineType.RIGHT_INSIDE }
+                            if (lineListNew.isNotEmpty()) {
+                                createCurvePathOrPoints(
+                                    lineList = lineListNew.toMutableList(),
+                                    axisPoints = axisPoints,
+                                    xAxisMin = xAxis.min,
+                                    xAxisMax = xAxis.max,
+                                    yAxisMin = yAxis.min,
+                                    yAxisMax = yAxis.max,
+                                    scale = scale,
+                                    xAxisPosition = xAxis.position ?: 0f,
+                                    pathAndPointsList = previousListCurvePathOrPoints.get(LineType.RIGHT_INSIDE)
+                                ).let {
+                                    put(LineType.RIGHT_INSIDE, it)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -257,6 +277,7 @@ fun LineChart(
                             axisPoints = axisPoints,
                             yLeftInsideAxis = yLeftInsideAxis,
                             yLeftAxis = yLeftAxis,
+                            yRightInsideAxis = yRightInsideAxis,
                             yRightAxis = yRightAxis
                         )
                         val downDataY = downDataYLeftInside ?: downDataYLeft ?: downDataYRight ?: 0f
@@ -330,6 +351,7 @@ fun LineChart(
                                     axisPoints = axisPoints,
                                     yLeftInsideAxis = yLeftInsideAxis,
                                     yLeftAxis = yLeftAxis,
+                                    yRightInsideAxis = yRightInsideAxis,
                                     yRightAxis = yRightAxis
                                 )
 
@@ -393,6 +415,7 @@ fun LineChart(
                                     axisPoints = axisPoints,
                                     yLeftInsideAxis = yLeftInsideAxis,
                                     yLeftAxis = yLeftAxis,
+                                    yRightInsideAxis = yRightInsideAxis,
                                     yRightAxis = yRightAxis
                                 )
 
@@ -457,6 +480,7 @@ fun LineChart(
                                 xAxis,
                                 yLeftInsideAxis,
                                 yLeftAxis,
+                                yRightInsideAxis,
                                 yRightAxis,
                                 axisPoints = axisPoints,
                                 scale = scale
@@ -467,6 +491,7 @@ fun LineChart(
                                 xAxis,
                                 yLeftInsideAxis,
                                 yLeftAxis,
+                                yRightInsideAxis,
                                 yRightAxis,
                                 axisPoints = axisPoints,
                             )
@@ -476,6 +501,7 @@ fun LineChart(
                                 xAxis,
                                 yLeftInsideAxis,
                                 yLeftAxis,
+                                yRightInsideAxis,
                                 yRightAxis,
                                 axisPoints = axisPoints,
                             )
@@ -485,6 +511,7 @@ fun LineChart(
                                 xAxis,
                                 yLeftInsideAxis,
                                 yLeftAxis,
+                                yRightInsideAxis,
                                 yRightAxis,
                                 axisPoints = axisPoints,
                                 scale = scale
@@ -496,6 +523,7 @@ fun LineChart(
                                 xAxis,
                                 yLeftInsideAxis,
                                 yLeftAxis,
+                                yRightInsideAxis,
                                 yRightAxis,
                                 axisPoints = axisPoints,
                                 scale = scale
@@ -510,6 +538,7 @@ fun LineChart(
                                     xAxis,
                                     yLeftInsideAxis,
                                     yLeftAxis,
+                                    yRightInsideAxis,
                                     yRightAxis,
                                     axisPoints,
                                     scale
@@ -524,6 +553,7 @@ fun LineChart(
                                     xAxis,
                                     yLeftInsideAxis,
                                     yLeftAxis,
+                                    yRightInsideAxis,
                                     yRightAxis,
                                     axisPoints,
                                     scale
@@ -549,6 +579,7 @@ private fun selfAdaptation(
     xAxis: Axis,
     yLeftAxis: Axis?,
     yLeftInsideAxis: Axis?,
+    yRightInsideAxis: Axis?,
     yRightAxis: Axis?,
     lineList: List<Line>?
 ) {
@@ -563,6 +594,11 @@ private fun selfAdaptation(
         val lineListNew = lineList?.filter { it.axisType == LineType.LEFT_INSIDE }
         reSetYMax(yLeftInsideAxis, lineListNew)
         reSetYMin(yLeftInsideAxis, lineListNew)
+    }
+    if (yRightInsideAxis != null) {
+        val lineListNew = lineList?.filter { it.axisType == LineType.RIGHT_INSIDE }
+        reSetYMax(yRightInsideAxis, lineListNew)
+        reSetYMin(yRightInsideAxis, lineListNew)
     }
     if (yRightAxis != null) {
         val lineListNew = lineList?.filter { it.axisType == LineType.RIGHT }
@@ -1686,6 +1722,7 @@ private fun convertPixelToAllDataY(
     axisPoints: AxisPoints,
     yLeftInsideAxis: Axis?,
     yLeftAxis: Axis?,
+    yRightInsideAxis: Axis?,
     yRightAxis: Axis?
 ): Triple<Float?, Float?, Float?> {
     val dataYLeftInside = yLeftInsideAxis?.let { axis ->
@@ -1696,6 +1733,13 @@ private fun convertPixelToAllDataY(
     }
 
     val dataYLeft = yLeftAxis?.let { axis ->
+        val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (axis.max - axis.min)
+        val offsetYPx = axis.min * oneDataYPx
+        val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
+        raw.coerceIn(axis.min, axis.max)
+    }
+
+    val dataYRightInside = yRightInsideAxis?.let { axis ->
         val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (axis.max - axis.min)
         val offsetYPx = axis.min * oneDataYPx
         val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
