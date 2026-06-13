@@ -67,7 +67,7 @@ fun LineChart(
     val yRightAxis by derivedStateOf { data?.yRightAxis }
     val isSelfAdaptation by derivedStateOf { data?.isSelfAdaptation == true }
     val isScroll by derivedStateOf { data?.isScroll }
-    val axisPadding by derivedStateOf { data?.axisPadding }
+    val axisPadding by derivedStateOf { data?.drawAreaPadding }
     val limitLinePosition by derivedStateOf { data?.limitLinePosition }
     val onTouch = data?.onTouch
 
@@ -122,7 +122,7 @@ fun LineChart(
                     yLeftAxis,
                     yLeftInsideAxis,
                     yRightAxis,
-                    axisPadding = axisPadding,
+                    drawAreaPadding = axisPadding,
                     density = density,
                     textMeasurer = measurer,
                     size = canvasSize
@@ -616,7 +616,7 @@ private fun getAxisPoints(
     yLeftAxis: Axis?,
     yLeftInsideAxis: Axis?,
     yRightAxis: Axis?,
-    axisPadding: AxisPadding?,
+    drawAreaPadding: DrawAreaPadding?,
     density: Density,
     textMeasurer: TextMeasurer,
     size: IntSize,
@@ -626,7 +626,7 @@ private fun getAxisPoints(
     var endPx: Float? = null
     var topPx: Float? = null
     var bottomPx: Float? = null
-    axisPadding?.apply {
+    drawAreaPadding?.apply {
         with(density) {
             startPx = start?.toPx()
             endPx = end?.toPx()

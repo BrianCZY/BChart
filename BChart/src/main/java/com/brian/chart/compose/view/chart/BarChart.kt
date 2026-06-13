@@ -64,7 +64,7 @@ fun BarChart(
     val yLeftAxis: Axis = data?.yLeftAxis ?: Axis()
     val isScroll: Boolean = data?.isScroll ?: false
 
-    val axisPadding by derivedStateOf { data?.axisPadding }
+    val axisPadding by derivedStateOf { data?.drawAreaPadding }
     val limitLinePosition by derivedStateOf { data?.limitLinePosition }
     val isSelfAdaptation by derivedStateOf { data?.isSelfAdaptation == true }
     val onTouch = data?.onTouch
@@ -117,7 +117,7 @@ fun BarChart(
                 getAxisPoints(
                     xAxis = xAxis,
                     yLeftAxis = yLeftAxis,
-                    axisPadding = axisPadding,
+                    drawAreaPadding = axisPadding,
                     density = density,
                     textMeasurer = measurer,
                     size = canvasSize
@@ -345,7 +345,7 @@ private fun getAxisPoints(
     xAxis: Axis,
     yLeftAxis: Axis?,
     density: Density,
-    axisPadding: AxisPadding? = null,
+    drawAreaPadding: DrawAreaPadding? = null,
     textMeasurer: TextMeasurer,
     size: IntSize,
 ): DrawAreaPoints {
@@ -353,7 +353,7 @@ private fun getAxisPoints(
     var endPx: Float? = null
     var topPx: Float? = null
     var bottomPx: Float? = null
-    axisPadding?.apply {
+    drawAreaPadding?.apply {
         with(density) {
             startPx = start?.toPx()
             endPx = end?.toPx()
