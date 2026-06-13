@@ -1,9 +1,11 @@
+@file:JvmName("TestDataConstantKt")
+
 package com.czy.brianchart.data.testdata
 /**
  *@author Brian
- *@Description:Rd2000设备的心电图 I导联数据，测试UI使用
+ *@Description:心电图 I导联数据，测试UI使用
  */
-val RD2000_WAVE_IDATA_LIST = listOf(
+val WAVE_IDATA_LIST = listOf(
 
     0.057220466,
     0.06294251,
@@ -767,9 +769,9 @@ val RD2000_WAVE_IDATA_LIST = listOf(
 )
 /**
  *@author Brian
- *@Description:Rd2000设备的心电图 II导联数据，测试UI使用
+ *@Description:心电图 II导联数据，测试UI使用
  */
-val RD2000_WAVE_IIDATA_LIST = listOf(
+val WAVE_IIDATA_LIST = listOf(
 
     0.10385515,
     0.10185243,
@@ -1533,9 +1535,9 @@ val RD2000_WAVE_IIDATA_LIST = listOf(
 )
 /**
  *@author Brian
- *@Description:Rd2000设备的心电图 III导联数据，测试UI使用
+ *@Description:心电图 III导联数据，测试UI使用
  */
-val RD2000_WAVE_IIIDATA_LIST = listOf(
+val WAVE_IIIDATA_LIST = listOf(
 
     0.04663468,
     0.03890992,
@@ -2299,9 +2301,9 @@ val RD2000_WAVE_IIIDATA_LIST = listOf(
 )
 /**
  *@author Brian
- *@Description:Rd2000设备的心电图 V1导联数据，测试UI使用
+ *@Description:心电图 V1导联数据，测试UI使用
  */
-val RD2000_WAVE_V1DATA_LIST = listOf(
+val WAVE_V1DATA_LIST = listOf(
 
     0.4526139,
     0.4534722,
@@ -3065,9 +3067,9 @@ val RD2000_WAVE_V1DATA_LIST = listOf(
 )
 /**
  *@author Brian
- *@Description:Rd2000设备的心电图 AVR导联数据，测试UI使用
+ *@Description:心电图 AVR导联数据，测试UI使用
  */
-val RD2000_WAVE_AVRDATA_LIST = listOf(
+val WAVE_AVRDATA_LIST = listOf(
 
     -0.08053781,
     -0.082397476,
@@ -3831,9 +3833,9 @@ val RD2000_WAVE_AVRDATA_LIST = listOf(
 )
 /**
  *@author Brian
- *@Description:Rd2000设备的心电图 AVL导联数据，测试UI使用
+ *@Description:心电图 AVL导联数据，测试UI使用
  */
-val RD2000_WAVE_AVLDATA_LIST = listOf(
+val WAVE_AVLDATA_LIST = listOf(
 
     0.0052928925,
     0.012016296,
@@ -4597,9 +4599,9 @@ val RD2000_WAVE_AVLDATA_LIST = listOf(
 )
 /**
  *@author Brian
- *@Description:Rd2000设备的心电图 AVF导联数据，测试UI使用
+ *@Description:心电图 AVF导联数据，测试UI使用
  */
-val RD2000_WAVE_AVFDATA_LIST = listOf(
+val WAVE_AVFDATA_LIST = listOf(
 
     0.07524492,
     0.07038118,

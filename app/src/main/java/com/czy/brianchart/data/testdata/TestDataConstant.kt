@@ -2,9 +2,9 @@ package com.czy.brianchart.data.testdata
 
 /**
  *@author Brian
- *@Description:BerryMed设备的心电图数据，测试UI使用
+ *@Description:心电图数据，测试UI使用
  */
-val BERRY_MED_WAVE_DATA_LIST = listOf(
+val WAVE_DATA_LIST = listOf(
     123,
     123,
     123,
