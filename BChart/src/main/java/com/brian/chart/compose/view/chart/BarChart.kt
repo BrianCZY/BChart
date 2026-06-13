@@ -7,8 +7,6 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -154,7 +152,7 @@ fun BarChart(
                         // 处理 DOWN 事件
                         val downDataX = convertPixelToDataX(
                             pixelX = down.position.x,
-                            axisPoints = axisPoints,
+                            drawAreaPoints = axisPoints,
                             xAxisMin = xAxis.min,
                             xAxisMax = xAxis.max,
                             scale = scale
@@ -174,11 +172,11 @@ fun BarChart(
 
                         // 缓存常用值，避免在高频 MOVE 中重复计算
                         val oneDataXPx =
-                            (axisPoints.point1.x - axisPoints.point0.x) / (xAxis.max - xAxis.min)
+                            (axisPoints.rightBottom.x - axisPoints.leftBottom.x) / (xAxis.max - xAxis.min)
                         // 选择一个主要的 Y 轴用于快速 dataY 计算（优先左内轴）
                         val primaryYAxis = yLeftAxis
                         val oneDataYPx =
-                            primaryYAxis?.let { (axisPoints.point0.y - axisPoints.point3.y) / (it.max - it.min) }
+                            primaryYAxis?.let { (axisPoints.leftBottom.y - axisPoints.leftTop.y) / (it.max - it.min) }
                         val offsetXPx = xAxis.min * oneDataXPx
                         val offsetYPx = primaryYAxis?.let { it.min * (oneDataYPx ?: 0f) } ?: 0f
 
@@ -199,14 +197,14 @@ fun BarChart(
                                 // 使用统一的转换函数（包含边界裁剪）以保证 dataX/dataY 在 axis.min..axis.max 之内
                                 val upDataX = convertPixelToDataX(
                                     pixelX = upPos.x,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     scale = scale
                                 )
                                 val upDataY = convertPixelToDataY(
                                     pixelY = upPos.y,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     yLeftAxis = yLeftAxis,
                                 )
 
@@ -238,14 +236,14 @@ fun BarChart(
                                 // 使用统一的转换函数以保持一致性并裁剪到轴范围内
                                 val mvDataX = convertPixelToDataX(
                                     pixelX = mvPos.x,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     scale = scale
                                 )
                                 val mvDataY = convertPixelToDataY(
                                     pixelY = mvPos.y,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     yLeftAxis = yLeftAxis,
 
                                     )
@@ -282,19 +280,19 @@ fun BarChart(
 
             /**画chunk 块内容*/
             drawChunk(
-                this, xAxis = xAxis, yLeftAxis = yLeftAxis, axisPoints = axisPoints
+                this, xAxis = xAxis, yLeftAxis = yLeftAxis, drawAreaPoints = axisPoints
             )
 
             /**画xy轴*/
             drawXYAxis(
-                this, xAxis = xAxis, yLeftAxis = yLeftAxis, axisPoints = axisPoints
+                this, xAxis = xAxis, yLeftAxis = yLeftAxis, drawAreaPoints = axisPoints
             )
             /**刻度 label*/
             drawLable(
                 this,
                 xAxis = xAxis,
                 yLeftAxis = yLeftAxis,
-                axisPoints = axisPoints,
+                drawAreaPoints = axisPoints,
                 scale = scale
             )
 
@@ -303,7 +301,7 @@ fun BarChart(
                 this,
                 xAxis = xAxis,
                 yLeftAxis = yLeftAxis,
-                axisPoints = axisPoints,
+                drawAreaPoints = axisPoints,
                 scale = scale
             )
             val isLimitLineBelow = limitLinePosition == LimitLinePosition.BELOW
@@ -313,7 +311,7 @@ fun BarChart(
                     this,
                     xAxis = xAxis,
                     yLeftAxis = yLeftAxis,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = axisPoints,
                     scale = scale
                 )
             }
@@ -323,10 +321,10 @@ fun BarChart(
                 barData,
                 xAxis = xAxis,
                 yLeftAxis = yLeftAxis,
-                point0 = axisPoints.point0,
-                point1 = axisPoints.point1,
-                point2 = axisPoints.point2,
-                point3 = axisPoints.point3,
+                point0 = axisPoints.leftBottom,
+                point1 = axisPoints.rightBottom,
+                point2 = axisPoints.rightTop,
+                point3 = axisPoints.leftTop,
                 scale = scale
             )
             if (!isLimitLineBelow) {
@@ -335,7 +333,7 @@ fun BarChart(
                     this,
                     xAxis = xAxis,
                     yLeftAxis = yLeftAxis,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = axisPoints,
                     scale = scale
                 )
             }
@@ -350,7 +348,7 @@ private fun getAxisPoints(
     axisPadding: AxisPadding? = null,
     textMeasurer: TextMeasurer,
     size: IntSize,
-): AxisPoints {
+): DrawAreaPoints {
     var startPx: Float? = null
     var endPx: Float? = null
     var topPx: Float? = null
@@ -398,7 +396,7 @@ private fun getAxisPoints(
     )//左上角点
 
 
-    return AxisPoints(point0, point1, point2, point3)
+    return DrawAreaPoints(leftBottom = point0, rightBottom = point1, rightTop = point2, leftTop = point3)
 }
 
 /**

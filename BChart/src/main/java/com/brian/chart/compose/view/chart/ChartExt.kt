@@ -1,8 +1,6 @@
-package com.brian.chart.compose.view.chart
+﻿package com.brian.chart.compose.view.chart
 
 import android.graphics.Paint
-import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -10,7 +8,6 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import java.math.BigDecimal
@@ -18,12 +15,12 @@ import java.math.BigDecimal
 
 /**
  * @author Brian
- * @Description:画颜色块
+ * @Description:鐢婚鑹插潡
  */
 fun drawXChunk(
     drawScope: DrawScope,
     chunkList: MutableList<Chunk>?,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     axisMin: Float,
     axisMax: Float,
 
@@ -32,12 +29,12 @@ fun drawXChunk(
 
 
         val oneDataYPx =
-            (axisPoints.point1.x - axisPoints.point0.x) / (axisMax - axisMin) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (axisMax - axisMin) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
         chunkList?.forEachIndexed { index, chunk ->
-            val X1 = axisPoints.point0.x + (chunk.start - axisMin) * oneDataYPx
-            val X2 = axisPoints.point0.x + (chunk.end - axisMin) * oneDataYPx
-            val Y1 = axisPoints.point0.y  //
-            val Y2 = axisPoints.point3.y  //
+            val X1 = drawAreaPoints.leftBottom.x + (chunk.start - axisMin) * oneDataYPx
+            val X2 = drawAreaPoints.leftBottom.x + (chunk.end - axisMin) * oneDataYPx
+            val Y1 = drawAreaPoints.leftBottom.y  //
+            val Y2 = drawAreaPoints.leftTop.y  //
 
             drawRect(
                 color = chunk.color,
@@ -60,7 +57,7 @@ fun drawChunk(
     yLeftAxis: Axis? = null,
     yRightInsideAxis: Axis? = null,
     yRightAxis: Axis? = null,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
 ) {
     drawScope.run {
         xAxis.let {
@@ -68,7 +65,7 @@ fun drawChunk(
                 drawXChunk(
                     drawScope = this,
                     chunkList = chunkList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     axisMax = it.max,
                     axisMin = it.min,
                 )
@@ -79,7 +76,7 @@ fun drawChunk(
                 drawYChunk(
                     drawScope = this,
                     yChunkList = chunkList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     yAxisMax = it.max,
                     yAxisMin = it.min,
                 )
@@ -90,7 +87,7 @@ fun drawChunk(
                 drawYChunk(
                     drawScope = this,
                     yChunkList = chunkList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     yAxisMax = it.max,
                     yAxisMin = it.min,
                 )
@@ -103,7 +100,7 @@ fun drawChunk(
                 drawYChunk(
                     drawScope = this,
                     yChunkList = chunkList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     yAxisMax = it.max,
                     yAxisMin = it.min,
                 )
@@ -116,7 +113,7 @@ fun drawChunk(
                 drawYChunk(
                     drawScope = this,
                     yChunkList = chunkList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     yAxisMax = it.max,
                     yAxisMin = it.min,
                 )
@@ -134,18 +131,18 @@ fun drawXYAxis(
     yLeftAxis: Axis? = null,
     yRightInsideAxis: Axis? = null,
     yRightAxis: Axis? = null,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
 ) {
     drawScope.run {
 
         val oneDataXPx =
-            (axisPoints.point1.x - axisPoints.point0.x) / (xAxis.max - xAxis.min) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (xAxis.max - xAxis.min) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
         var oneDataYPx = 0f
         var yOffset = 0f
         when {
             yLeftAxis != null -> {
                 oneDataYPx =
-                    (axisPoints.point0.y - axisPoints.point3.y) / (yLeftAxis.max - yLeftAxis.min) // Y轴上 1f单位数据点对应的px数
+                    (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yLeftAxis.max - yLeftAxis.min) // Y杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
                 xAxis.position?.let {
                     yOffset = (it - yLeftAxis.min) * oneDataYPx
                 }
@@ -154,7 +151,7 @@ fun drawXYAxis(
 
             yLeftInsideAxis != null -> {
                 oneDataYPx =
-                    (axisPoints.point0.y - axisPoints.point3.y) / (yLeftInsideAxis.max - yLeftInsideAxis.min) // Y轴上 1f单位数据点对应的px数
+                    (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yLeftInsideAxis.max - yLeftInsideAxis.min) // Y杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
                 xAxis.position?.let {
                     yOffset = (it - yLeftInsideAxis.min) * oneDataYPx
                 }
@@ -162,7 +159,7 @@ fun drawXYAxis(
 
             yRightAxis != null -> {
                 oneDataYPx =
-                    (axisPoints.point0.y - axisPoints.point3.y) / (yRightAxis.max - yRightAxis.min) // Y轴上 1f单位数据点对应的px数
+                    (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yRightAxis.max - yRightAxis.min) // Y杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
                 xAxis.position?.let {
                     yOffset = (it - yRightAxis.min) * oneDataYPx
                 }
@@ -171,61 +168,61 @@ fun drawXYAxis(
 
 
         xAxis.let {
-            //绘制 X轴
+            //缁樺埗 X杞?
             if (it.isDrawAxis) {
 
                 drawLine(
-                    start = Offset(axisPoints.point0.x, axisPoints.point0.y - yOffset),
-                    end = Offset(axisPoints.point1.x, axisPoints.point1.y - yOffset),
+                    start = Offset(drawAreaPoints.leftBottom.x, drawAreaPoints.leftBottom.y - yOffset),
+                    end = Offset(drawAreaPoints.rightBottom.x, drawAreaPoints.rightBottom.y - yOffset),
                     color = it.color,
                     strokeWidth = it.strokeSize.toPx()
                 )
             }
         }
-        //绘制 Y轴 左内
+        //缁樺埗 Y杞?宸﹀唴
         yLeftInsideAxis?.let {
             if (it.isDrawAxis) {
 
                 val xOffset = it.position?.let { (it - xAxis.min) * oneDataXPx } ?: 0f
                 drawLine(
-                    start = Offset(axisPoints.point0.x + xOffset, axisPoints.point0.y),
-                    end = Offset(axisPoints.point3.x + xOffset, axisPoints.point3.y),
+                    start = Offset(drawAreaPoints.leftBottom.x + xOffset, drawAreaPoints.leftBottom.y),
+                    end = Offset(drawAreaPoints.leftTop.x + xOffset, drawAreaPoints.leftTop.y),
                     color = it.color,
                     strokeWidth = it.strokeSize.toPx()
                 )
             }
         }
-        //绘制 Y轴 左
+        //缁樺埗 Y杞?宸?
         yLeftAxis?.let {
             if (it.isDrawAxis) {
                 val xOffset = it.position?.let { (it - xAxis.min) * oneDataXPx } ?: 0f
                 drawLine(
-                    start = Offset(axisPoints.point0.x + xOffset, axisPoints.point0.y),
-                    end = Offset(axisPoints.point3.x + xOffset, axisPoints.point3.y),
+                    start = Offset(drawAreaPoints.leftBottom.x + xOffset, drawAreaPoints.leftBottom.y),
+                    end = Offset(drawAreaPoints.leftTop.x + xOffset, drawAreaPoints.leftTop.y),
                     color = it.color,
                     strokeWidth = it.strokeSize.toPx()
                 )
             }
         }
-        //绘制 Y轴 右内
+        //缁樺埗 Y杞?鍙冲唴
         yRightInsideAxis?.let {
             if (it.isDrawAxis) {
                 val xOffset = it.position?.let { (it - xAxis.max) * oneDataXPx } ?: 0f
                 drawLine(
-                    start = Offset(axisPoints.point1.x + xOffset, axisPoints.point1.y),
-                    end = Offset(axisPoints.point2.x + xOffset, axisPoints.point2.y),
+                    start = Offset(drawAreaPoints.rightBottom.x + xOffset, drawAreaPoints.rightBottom.y),
+                    end = Offset(drawAreaPoints.rightTop.x + xOffset, drawAreaPoints.rightTop.y),
                     color = it.color,
                     strokeWidth = it.strokeSize.toPx()
                 )
             }
         }
-        //绘制 Y轴 右
+        //缁樺埗 Y杞?鍙?
         yRightAxis?.let {
             if (it.isDrawAxis) {
                 val xOffset = it.position?.let { (it - xAxis.max) * oneDataXPx } ?: 0f
                 drawLine(
-                    start = Offset(axisPoints.point1.x + xOffset, axisPoints.point1.y),
-                    end = Offset(axisPoints.point2.x + xOffset, axisPoints.point2.y),
+                    start = Offset(drawAreaPoints.rightBottom.x + xOffset, drawAreaPoints.rightBottom.y),
+                    end = Offset(drawAreaPoints.rightTop.x + xOffset, drawAreaPoints.rightTop.y),
                     color = it.color,
                     strokeWidth = it.strokeSize.toPx()
                 )
@@ -245,7 +242,7 @@ fun getScaleLengSize(axis: Axis?, currentDensity: Density): Float {
 
     } else {
         0f
-    }//左边刻度的长度
+    }//宸﹁竟鍒诲害鐨勯暱搴?
 
 }
 
@@ -256,18 +253,18 @@ fun drawLable(
     yLeftAxis: Axis? = null,
     yRightInsideAxis: Axis? = null,
     yRightAxis: Axis? = null,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     scale: Float = 1f
 ) {
     drawScope.run {
         val oneDataXPx =
-            (axisPoints.point1.x - axisPoints.point0.x) / (xAxis.max - xAxis.min) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (xAxis.max - xAxis.min) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
         var oneDataYPx = 0f
         var yOffset = 0f
         when {
             yLeftAxis != null -> {
                 oneDataYPx =
-                    (axisPoints.point0.y - axisPoints.point3.y) / (yLeftAxis.max - yLeftAxis.min) // Y轴上 1f单位数据点对应的px数
+                    (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yLeftAxis.max - yLeftAxis.min) // Y杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
                 xAxis.position?.let {
                     yOffset = (it - yLeftAxis.min) * oneDataYPx
                 }
@@ -276,7 +273,7 @@ fun drawLable(
 
             yLeftInsideAxis != null -> {
                 oneDataYPx =
-                    (axisPoints.point0.y - axisPoints.point3.y) / (yLeftInsideAxis.max - yLeftInsideAxis.min) // Y轴上 1f单位数据点对应的px数
+                    (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yLeftInsideAxis.max - yLeftInsideAxis.min) // Y杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
                 xAxis.position?.let {
                     yOffset = (it - yLeftInsideAxis.min) * oneDataYPx
                 }
@@ -284,7 +281,7 @@ fun drawLable(
 
             yRightAxis != null -> {
                 oneDataYPx =
-                    (axisPoints.point0.y - axisPoints.point3.y) / (yRightAxis.max - yRightAxis.min) // Y轴上 1f单位数据点对应的px数
+                    (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yRightAxis.max - yRightAxis.min) // Y杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
                 xAxis.position?.let {
                     yOffset = (it - yRightAxis.min) * oneDataYPx
                 }
@@ -294,7 +291,7 @@ fun drawLable(
             it.scaleInterval?.let { scaleInterval ->
                 drawXaxisBottomScale(
                     drawScope = this,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     defaultXAxisMax = it.max,
                     defaultXAxisMin = it.min,
                     axisColor = it.color,
@@ -311,7 +308,7 @@ fun drawLable(
 
                     drawXaxisBottomLabel(
                         drawScope = this,
-                        axisPoints = axisPoints,
+                        drawAreaPoints = drawAreaPoints,
                         defaultXAxisMax = it.max,
                         defaultXAxisMin = it.min,
                         labelColor = it.color,
@@ -330,7 +327,7 @@ fun drawLable(
             it.scaleInterval?.let { scaleInterval ->
                 drawYAxisLeftInsideScale(
                     drawScope = this,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     defaultXAxisMax = it.max,
                     defaultXAxisMin = it.min,
                     axisColor = it.color,
@@ -345,7 +342,7 @@ fun drawLable(
                 it.labelInterval?.let { labelInterval ->
                     drawYAxisLeftInsideLabel(
                         drawScope = this,
-                        axisPoints = axisPoints,
+                        drawAreaPoints = drawAreaPoints,
                         defaultYAxisMax = it.max,
                         defaultYAxisMin = it.min,
                         labelColor = it.color,
@@ -363,7 +360,7 @@ fun drawLable(
             it.scaleInterval?.let { scaleInterval ->
                 drawYAxisLeftScale(
                     drawScope = this,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     defaultXAxisMax = it.max,
                     defaultXAxisMin = it.min,
                     axisColor = it.color,
@@ -378,7 +375,7 @@ fun drawLable(
                 it.labelInterval?.let { labelInterval ->
                     drawYAxisLeftLabel(
                         drawScope = this,
-                        axisPoints = axisPoints,
+                        drawAreaPoints = drawAreaPoints,
                         defaultYAxisMax = it.max,
                         defaultYAxisMin = it.min,
                         labelColor = it.color,
@@ -396,7 +393,7 @@ fun drawLable(
             it.scaleInterval?.let { scaleInterval ->
                 drawYAxisRightInsideScale(
                     drawScope = this,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     defaultXAxisMax = it.max,
                     defaultXAxisMin = it.min,
                     axisColor = it.color,
@@ -411,7 +408,7 @@ fun drawLable(
                 it.labelInterval?.let { labelInterval ->
                     drawYAxisRightInsideLabel(
                         drawScope = this,
-                        axisPoints = axisPoints,
+                        drawAreaPoints = drawAreaPoints,
                         defaultYAxisMax = it.max,
                         defaultYAxisMin = it.min,
                         labelColor = it.color,
@@ -429,7 +426,7 @@ fun drawLable(
             it.scaleInterval?.let { scaleInterval ->
                 drawYAxisRightScale(
                     drawScope = this,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     defaultXAxisMax = it.max,
                     defaultXAxisMin = it.min,
                     axisColor = it.color,
@@ -444,7 +441,7 @@ fun drawLable(
                 it.labelInterval?.let { labelInterval ->
                     drawYAxisRightLabel(
                         drawScope = this,
-                        axisPoints = axisPoints,
+                        drawAreaPoints = drawAreaPoints,
                         defaultYAxisMax = it.max,
                         defaultYAxisMin = it.min,
                         labelColor = it.color,
@@ -470,7 +467,7 @@ fun drawLimitLine(
     yLeftAxis: Axis? = null,
     yRightInsideAxis: Axis? = null,
     yRightAxis: Axis? = null,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     scale: Float
 ) {
     drawScope.run {
@@ -479,7 +476,7 @@ fun drawLimitLine(
                 drawXLimitLine(
                     drawScope = this,
                     xLimitLineList = limitLineList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     axisMax = it.max,
                     axisMin = it.min,
                     scale = scale,
@@ -494,7 +491,7 @@ fun drawLimitLine(
                 drawYLimitLine(
                     drawScope = this,
                     yLimitLineList = limitLineList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     axisMax = it.max,
                     axisMin = it.min,
                     scale = scale,
@@ -507,7 +504,7 @@ fun drawLimitLine(
                 drawYLimitLine(
                     drawScope = this,
                     yLimitLineList = limitLineList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     axisMax = it.max,
                     axisMin = it.min,
                     scale = scale,
@@ -521,7 +518,7 @@ fun drawLimitLine(
                 drawYLimitLine(
                     drawScope = this,
                     yLimitLineList = limitLineList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     axisMax = it.max,
                     axisMin = it.min,
                     scale = scale,
@@ -535,7 +532,7 @@ fun drawLimitLine(
                 drawYLimitLine(
                     drawScope = this,
                     yLimitLineList = limitLineList,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     axisMax = it.max,
                     axisMin = it.min,
                     scale = scale,
@@ -554,7 +551,7 @@ fun drawAxisName(
     yLeftAxis: Axis? = null,
     yRightInsideAxis: Axis? = null,
     yRightAxis: Axis? = null,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     scale: Float
 ) {
     drawScope.run {
@@ -563,7 +560,7 @@ fun drawAxisName(
                 drawXaxisBottomName(
                     drawScope = this,
                     name = name,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     defaultXAxisMax = it.max,
                     labelColor = it.color,
                     labelTextSizePx = it.labelTextSize.toPx(),
@@ -579,7 +576,7 @@ fun drawAxisName(
                 drawYAxisLeftInsideName(
                     drawScope = this,
                     name = name,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
 
                     labelColor = it.color,
                     labelTextSizePx = it.labelTextSize.toPx(),
@@ -593,7 +590,7 @@ fun drawAxisName(
                 drawYAxisLeftName(
                     drawScope = this,
                     name = name,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     labelColor = it.color,
                     labelTextSizePx = it.labelTextSize.toPx(),
                     scale = scale,
@@ -606,7 +603,7 @@ fun drawAxisName(
                 drawYAxisRightInsideName(
                     drawScope = this,
                     name = name,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
 
                     labelColor = it.color,
                     labelTextSizePx = it.labelTextSize.toPx(),
@@ -620,7 +617,7 @@ fun drawAxisName(
                 drawYAxisRightName(
                     drawScope = this,
                     name = name,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
 
                     labelColor = it.color,
                     labelTextSizePx = it.labelTextSize.toPx(),
@@ -635,7 +632,7 @@ fun drawAxisName(
 
 fun drawXaxisBottomScale(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultXAxisMin: Float,
     defaultXAxisMax: Float,
     axisColor: Color,
@@ -646,16 +643,16 @@ fun drawXaxisBottomScale(
     yOffset: Float
 ) {
     drawScope.run {
-//        val scaleInterval = 2f //刻度之间的间隔 实际数据间隔
-        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//刻度个数
-        val scaleIntervalSize = (axisPoints.point1.x - axisPoints.point0.x) / scaleNum//刻度间隔，换算成px
+//        val scaleInterval = 2f //鍒诲害涔嬮棿鐨勯棿闅?瀹為檯鏁版嵁闂撮殧
+        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//鍒诲害涓暟
+        val scaleIntervalSize = (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / scaleNum//鍒诲害闂撮殧锛屾崲绠楁垚px
         for (i in 0..scaleNum.toInt()) {
-            val x = (axisPoints.point0.x + i * scaleIntervalSize)
+            val x = (drawAreaPoints.leftBottom.x + i * scaleIntervalSize)
             drawLine(
-                start = Offset(x * scale, axisPoints.point0.y - yOffset),
+                start = Offset(x * scale, drawAreaPoints.leftBottom.y - yOffset),
                 end = Offset(
                     x * scale,
-                    axisPoints.point0.y + scaleLengSize - yOffset
+                    drawAreaPoints.leftBottom.y + scaleLengSize - yOffset
                 ),
                 color = axisColor,
                 strokeWidth = axisStrokeSize
@@ -667,7 +664,7 @@ fun drawXaxisBottomScale(
 
 fun drawYAxisLeftInsideScale(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultXAxisMin: Float,
     defaultXAxisMax: Float,
     axisColor: Color,
@@ -678,15 +675,15 @@ fun drawYAxisLeftInsideScale(
     xOffset: Float
 ) {
     drawScope.run {
-//        val scaleInterval = 2f //刻度之间的间隔 实际数据间隔
-        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//刻度个数
-        val scaleIntervalSize = (axisPoints.point0.y - axisPoints.point3.y) / scaleNum//刻度间隔，换算成px
+//        val scaleInterval = 2f //鍒诲害涔嬮棿鐨勯棿闅?瀹為檯鏁版嵁闂撮殧
+        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//鍒诲害涓暟
+        val scaleIntervalSize = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / scaleNum//鍒诲害闂撮殧锛屾崲绠楁垚px
         for (i in 0..scaleNum.toInt()) {
-            val y = (axisPoints.point0.y - i * scaleIntervalSize)
+            val y = (drawAreaPoints.leftBottom.y - i * scaleIntervalSize)
             drawLine(
-                start = Offset(axisPoints.point0.x + xOffset, y),
+                start = Offset(drawAreaPoints.leftBottom.x + xOffset, y),
                 end = Offset(
-                    axisPoints.point0.x + scaleLengSize * scale + xOffset,
+                    drawAreaPoints.leftBottom.x + scaleLengSize * scale + xOffset,
                     y
                 ),
                 color = axisColor,
@@ -699,7 +696,7 @@ fun drawYAxisLeftInsideScale(
 
 fun drawYAxisLeftScale(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultXAxisMin: Float,
     defaultXAxisMax: Float,
     axisColor: Color,
@@ -710,15 +707,15 @@ fun drawYAxisLeftScale(
     xOffset: Float
 ) {
     drawScope.run {
-//        val scaleInterval = 2f //刻度之间的间隔 实际数据间隔
-        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//刻度个数
-        val scaleIntervalSize = (axisPoints.point0.y - axisPoints.point3.y) / scaleNum//刻度间隔，换算成px
+//        val scaleInterval = 2f //鍒诲害涔嬮棿鐨勯棿闅?瀹為檯鏁版嵁闂撮殧
+        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//鍒诲害涓暟
+        val scaleIntervalSize = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / scaleNum//鍒诲害闂撮殧锛屾崲绠楁垚px
         for (i in 0..scaleNum.toInt()) {
-            val y = (axisPoints.point0.y - i * scaleIntervalSize)
+            val y = (drawAreaPoints.leftBottom.y - i * scaleIntervalSize)
             drawLine(
-                start = Offset(axisPoints.point0.x + xOffset, y),
+                start = Offset(drawAreaPoints.leftBottom.x + xOffset, y),
                 end = Offset(
-                    axisPoints.point0.x - scaleLengSize * scale + xOffset,
+                    drawAreaPoints.leftBottom.x - scaleLengSize * scale + xOffset,
                     y
                 ),
                 color = axisColor,
@@ -731,7 +728,7 @@ fun drawYAxisLeftScale(
 
 fun drawYAxisRightScale(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultXAxisMin: Float,
     defaultXAxisMax: Float,
     axisColor: Color,
@@ -742,15 +739,15 @@ fun drawYAxisRightScale(
     xOffset: Float
 ) {
     drawScope.run {
-//        val scaleInterval = 2f //刻度之间的间隔 实际数据间隔
-        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//刻度个数
-        val scaleIntervalSize = (axisPoints.point0.y - axisPoints.point3.y) / scaleNum//刻度间隔，换算成px
+//        val scaleInterval = 2f //鍒诲害涔嬮棿鐨勯棿闅?瀹為檯鏁版嵁闂撮殧
+        val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval//鍒诲害涓暟
+        val scaleIntervalSize = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / scaleNum//鍒诲害闂撮殧锛屾崲绠楁垚px
         for (i in 0..scaleNum.toInt()) {
-            val y = (axisPoints.point0.y - i * scaleIntervalSize)
+            val y = (drawAreaPoints.leftBottom.y - i * scaleIntervalSize)
             drawLine(
-                start = Offset(axisPoints.point1.x + xOffset, y),
+                start = Offset(drawAreaPoints.rightBottom.x + xOffset, y),
                 end = Offset(
-                    axisPoints.point1.x + scaleLengSize * scale + xOffset,
+                    drawAreaPoints.rightBottom.x + scaleLengSize * scale + xOffset,
                     y
                 ),
                 color = axisColor,
@@ -763,7 +760,7 @@ fun drawYAxisRightScale(
 
 fun drawYAxisRightInsideScale(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultXAxisMin: Float,
     defaultXAxisMax: Float,
     axisColor: Color,
@@ -775,13 +772,13 @@ fun drawYAxisRightInsideScale(
 ) {
     drawScope.run {
         val scaleNum = (defaultXAxisMax - defaultXAxisMin) / scaleInterval
-        val scaleIntervalSize = (axisPoints.point0.y - axisPoints.point3.y) / scaleNum
+        val scaleIntervalSize = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / scaleNum
         for (i in 0..scaleNum.toInt()) {
-            val y = (axisPoints.point0.y - i * scaleIntervalSize)
+            val y = (drawAreaPoints.leftBottom.y - i * scaleIntervalSize)
             drawLine(
-                start = Offset(axisPoints.point1.x + xOffset, y),
+                start = Offset(drawAreaPoints.rightBottom.x + xOffset, y),
                 end = Offset(
-                    axisPoints.point1.x - scaleLengSize * scale + xOffset,
+                    drawAreaPoints.rightBottom.x - scaleLengSize * scale + xOffset,
                     y
                 ),
                 color = axisColor,
@@ -795,7 +792,7 @@ fun drawYAxisRightInsideScale(
 
 fun drawXaxisBottomLabel(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultXAxisMin: Float,
     defaultXAxisMax: Float,
     labelColor: Color,
@@ -807,7 +804,7 @@ fun drawXaxisBottomLabel(
 ) {
     with(drawScope) {
         val scaleNum = (defaultXAxisMax - defaultXAxisMin) / labelInterval
-        val scaleIntervalSize = (axisPoints.point1.x - axisPoints.point0.x) / scaleNum
+        val scaleIntervalSize = (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / scaleNum
 
         // Create paint once
         val nativePaint = android.graphics.Paint().apply {
@@ -816,7 +813,7 @@ fun drawXaxisBottomLabel(
             isAntiAlias = true
         }
 
-        val baseY = axisPoints.point0.y + labelTextSizePx + 4.dp.toPx() - yOffset
+        val baseY = drawAreaPoints.leftBottom.y + labelTextSizePx + 4.dp.toPx() - yOffset
 
         // Precompute all text positions and labels
         val textEntries = (0..scaleNum.toInt()).map { i ->
@@ -831,7 +828,7 @@ fun drawXaxisBottomLabel(
                 else labelValue.toString()
             }
             val x =
-                (axisPoints.point0.x + i * scaleIntervalSize - labelText.length * labelTextSizePx / 2 * 0.6f) * scale
+                (drawAreaPoints.leftBottom.x + i * scaleIntervalSize - labelText.length * labelTextSizePx / 2 * 0.6f) * scale
             Pair(labelText, x)
         }
 
@@ -849,7 +846,7 @@ private fun Float.isInteger(): Boolean = this == toInt().toFloat()
 fun drawXaxisBottomName(
     drawScope: DrawScope,
     name: String,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultXAxisMax: Float,
     labelColor: Color,
     labelTextSizePx: Float = 24f,
@@ -860,23 +857,23 @@ fun drawXaxisBottomName(
             it.apply {
                 textSize = labelTextSizePx
                 color = labelColor.toArgb()
-                isAntiAlias = true//抗锯齿
+                isAntiAlias = true//鎶楅敮榻?
             }
         }
         val label = when {
-            defaultXAxisMax.toInt().toFloat() == defaultXAxisMax -> {//为整数浮点数
+            defaultXAxisMax.toInt().toFloat() == defaultXAxisMax -> {//涓烘暣鏁版诞鐐规暟
                 "${defaultXAxisMax.toInt()}"
             }
 
-            else -> {//为小数浮点数
+            else -> {//涓哄皬鏁版诞鐐规暟
                 "${defaultXAxisMax}"
             }
         }
         val labelWidth = label.length * labelTextSizePx
         val offset = labelWidth / 2
 
-        val x = axisPoints.point1.x + offset
-        var y = axisPoints.point0.y + labelTextSizePx + 4.dp.toPx()
+        val x = drawAreaPoints.rightBottom.x + offset
+        var y = drawAreaPoints.leftBottom.y + labelTextSizePx + 4.dp.toPx()
         val nameList = name.split("\n")
         nameList.forEach {
             drawContext.canvas.nativeCanvas.drawText(
@@ -895,7 +892,7 @@ fun drawXaxisBottomName(
 fun drawYAxisLeftInsideName(
     drawScope: DrawScope,
     name: String,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     labelColor: Color,
     labelTextSizePx: Float = 24f,
     scale: Float
@@ -906,13 +903,13 @@ fun drawYAxisLeftInsideName(
             it.apply {
                 textSize = labelTextSizePx
                 color = labelColor.toArgb()
-                isAntiAlias = true//抗锯齿
+                isAntiAlias = true//鎶楅敮榻?
             }
         }
 
 
-        val x = axisPoints.point0.x + 8.dp.toPx()
-        var y = axisPoints.point3.y - labelTextSizePx
+        val x = drawAreaPoints.leftBottom.x + 8.dp.toPx()
+        var y = drawAreaPoints.leftTop.y - labelTextSizePx
         val nameList = name.split("\n")
         for (i in nameList.size - 1 downTo 0) {
             drawContext.canvas.nativeCanvas.drawText(
@@ -931,7 +928,7 @@ fun drawYAxisLeftInsideName(
 fun drawYAxisLeftName(
     drawScope: DrawScope,
     name: String,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     labelColor: Color,
     labelTextSizePx: Float = 24f,
     scale: Float
@@ -942,13 +939,13 @@ fun drawYAxisLeftName(
             it.apply {
                 textSize = labelTextSizePx
                 color = labelColor.toArgb()
-                isAntiAlias = true//抗锯齿
+                isAntiAlias = true//鎶楅敮榻?
             }
         }
 
 
         val x = 0f + 2.dp.toPx()
-        var y = axisPoints.point3.y - labelTextSizePx
+        var y = drawAreaPoints.leftTop.y - labelTextSizePx
         val nameList = name.split("\n")
         for (i in nameList.size - 1 downTo 0) {
             drawContext.canvas.nativeCanvas.drawText(
@@ -966,7 +963,7 @@ fun drawYAxisLeftName(
 fun drawYAxisRightName(
     drawScope: DrawScope,
     name: String,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     labelColor: Color,
     labelTextSizePx: Float = 24f,
     scale: Float
@@ -977,11 +974,11 @@ fun drawYAxisRightName(
             it.apply {
                 textSize = labelTextSizePx
                 color = labelColor.toArgb()
-                isAntiAlias = true//抗锯齿
+                isAntiAlias = true//鎶楅敮榻?
             }
         }
-        val x = axisPoints.point2.x + 2.dp.toPx()
-        var y = axisPoints.point2.y - labelTextSizePx
+        val x = drawAreaPoints.rightTop.x + 2.dp.toPx()
+        var y = drawAreaPoints.rightTop.y - labelTextSizePx
         val nameList = name.split("\n")
         for (i in nameList.size - 1 downTo 0) {
             drawContext.canvas.nativeCanvas.drawText(
@@ -1000,7 +997,7 @@ fun drawYAxisRightName(
 fun drawYAxisRightInsideName(
     drawScope: DrawScope,
     name: String,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     labelColor: Color,
     labelTextSizePx: Float = 24f,
     scale: Float
@@ -1011,11 +1008,11 @@ fun drawYAxisRightInsideName(
             it.apply {
                 textSize = labelTextSizePx
                 color = labelColor.toArgb()
-                isAntiAlias = true//抗锯齿
+                isAntiAlias = true//鎶楅敮榻?
             }
         }
-        val x = axisPoints.point2.x - 8.dp.toPx() - name.length * labelTextSizePx * 0.6f
-        var y = axisPoints.point2.y - labelTextSizePx
+        val x = drawAreaPoints.rightTop.x - 8.dp.toPx() - name.length * labelTextSizePx * 0.6f
+        var y = drawAreaPoints.rightTop.y - labelTextSizePx
         val nameList = name.split("\n")
         for (i in nameList.size - 1 downTo 0) {
             drawContext.canvas.nativeCanvas.drawText(
@@ -1033,7 +1030,7 @@ fun drawYAxisRightInsideName(
 
 fun drawYAxisLeftInsideLabel(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultYAxisMin: Float,
     defaultYAxisMax: Float,
     labelColor: Color,
@@ -1045,16 +1042,16 @@ fun drawYAxisLeftInsideLabel(
 ) {
     with(drawScope) {
         val scaleNum = (defaultYAxisMax - defaultYAxisMin) / labelInterval
-        val scaleIntervalSize = (axisPoints.point0.y - axisPoints.point3.y) / scaleNum
+        val scaleIntervalSize = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / scaleNum
 
-        // 创建并配置Paint对象（只创建一次）
+        // 鍒涘缓骞堕厤缃甈aint瀵硅薄锛堝彧鍒涘缓涓€娆★級
         val textPaint = android.graphics.Paint().apply {
             textSize = labelTextSizePx
             color = labelColor.toArgb()
             isAntiAlias = true
         }
 
-        // 预计算所有标签位置
+        // 棰勮绠楁墍鏈夋爣绛句綅缃?
         (0..scaleNum.toInt()).map { i ->
             val labelValue =
                 BigDecimal(defaultYAxisMin.toString()).add(
@@ -1063,8 +1060,8 @@ fun drawYAxisLeftInsideLabel(
                     )
                 ).toFloat()
             val labelText = settingLabelValue?.invoke(labelValue) ?: formatLabel(labelValue)
-            val x = axisPoints.point0.x + xOffset + 8.dp.toPx()
-            val y = axisPoints.point0.y - i * scaleIntervalSize + labelTextSizePx / 4
+            val x = drawAreaPoints.leftBottom.x + xOffset + 8.dp.toPx()
+            val y = drawAreaPoints.leftBottom.y - i * scaleIntervalSize + labelTextSizePx / 4
             labelText to Point(x, y)
         }.let {
             drawContext.canvas.nativeCanvas.apply {
@@ -1084,7 +1081,7 @@ private fun formatLabel(value: Float): String {
 
 fun drawYAxisLeftLabel(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultYAxisMin: Float,
     defaultYAxisMax: Float,
     labelColor: Color,
@@ -1096,7 +1093,7 @@ fun drawYAxisLeftLabel(
 ) {
     with(drawScope) {
         val scaleNum = (defaultYAxisMax - defaultYAxisMin) / labelInterval
-        val scaleIntervalSize = (axisPoints.point0.y - axisPoints.point3.y) / scaleNum
+        val scaleIntervalSize = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / scaleNum
 
         val textPaint = android.graphics.Paint().apply {
             textSize = labelTextSizePx
@@ -1115,8 +1112,8 @@ fun drawYAxisLeftLabel(
                 labelValue
             )
             val textWidth = labelText.length * labelTextSizePx
-            val x = axisPoints.point0.x + xOffset - 8.dp.toPx() - textWidth / 2
-            val y = axisPoints.point0.y - i * scaleIntervalSize + labelTextSizePx * 0.3f
+            val x = drawAreaPoints.leftBottom.x + xOffset - 8.dp.toPx() - textWidth / 2
+            val y = drawAreaPoints.leftBottom.y - i * scaleIntervalSize + labelTextSizePx * 0.3f
             labelText to Point(x, y)
         }.let {
             drawContext.canvas.nativeCanvas.apply {
@@ -1132,7 +1129,7 @@ fun drawYAxisLeftLabel(
 
 fun drawYAxisRightLabel(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultYAxisMin: Float,
     defaultYAxisMax: Float,
     labelColor: Color,
@@ -1144,7 +1141,7 @@ fun drawYAxisRightLabel(
 ) {
     with(drawScope) {
         val scaleNum = (defaultYAxisMax - defaultYAxisMin) / labelInterval
-        val scaleIntervalSize = (axisPoints.point1.y - axisPoints.point2.y) / scaleNum
+        val scaleIntervalSize = (drawAreaPoints.rightBottom.y - drawAreaPoints.rightTop.y) / scaleNum
 
         val textPaint = android.graphics.Paint().apply {
             textSize = labelTextSizePx
@@ -1162,8 +1159,8 @@ fun drawYAxisRightLabel(
             val labelText = settingLabelValue?.invoke(labelValue) ?: formatLabel(
                 labelValue
             )
-            val x = axisPoints.point1.x + xOffset + 8.dp.toPx()
-            val y = axisPoints.point1.y - i * scaleIntervalSize + labelTextSizePx * 0.3f
+            val x = drawAreaPoints.rightBottom.x + xOffset + 8.dp.toPx()
+            val y = drawAreaPoints.rightBottom.y - i * scaleIntervalSize + labelTextSizePx * 0.3f
             labelText to Point(x, y)
         }.let {
             drawContext.canvas.nativeCanvas.apply {
@@ -1178,7 +1175,7 @@ fun drawYAxisRightLabel(
 
 fun drawYAxisRightInsideLabel(
     drawScope: DrawScope,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     defaultYAxisMin: Float,
     defaultYAxisMax: Float,
     labelColor: Color,
@@ -1190,7 +1187,7 @@ fun drawYAxisRightInsideLabel(
 ) {
     with(drawScope) {
         val scaleNum = (defaultYAxisMax - defaultYAxisMin) / labelInterval
-        val scaleIntervalSize = (axisPoints.point0.y - axisPoints.point3.y) / scaleNum
+        val scaleIntervalSize = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / scaleNum
 
         val textPaint = android.graphics.Paint().apply {
             textSize = labelTextSizePx
@@ -1209,8 +1206,8 @@ fun drawYAxisRightInsideLabel(
                 labelValue
             )
             val textWidth = labelText.length * labelTextSizePx
-            val x = axisPoints.point1.x + xOffset - 8.dp.toPx() - textWidth / 2
-            val y = axisPoints.point0.y - i * scaleIntervalSize + labelTextSizePx * 0.3f
+            val x = drawAreaPoints.rightBottom.x + xOffset - 8.dp.toPx() - textWidth / 2
+            val y = drawAreaPoints.leftBottom.y - i * scaleIntervalSize + labelTextSizePx * 0.3f
             labelText to Point(x, y)
         }.let {
             drawContext.canvas.nativeCanvas.apply {
@@ -1226,12 +1223,12 @@ fun drawYAxisRightInsideLabel(
 
 /**
  * @author Brian
- * @Description:画颜色块
+ * @Description:鐢婚鑹插潡
  */
 fun drawYChunk(
     drawScope: DrawScope,
     yChunkList: MutableList<Chunk>?,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     yAxisMin: Float,
     yAxisMax: Float,
 
@@ -1240,16 +1237,16 @@ fun drawYChunk(
 
 
         val oneDataYPx =
-            (axisPoints.point0.y - axisPoints.point3.y) / (yAxisMax - yAxisMin) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yAxisMax - yAxisMin) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
         yChunkList?.forEachIndexed { index, chunk ->
-            val X1 = axisPoints.point0.x
-            val X2 = axisPoints.point1.x
-            val Y1 = axisPoints.point0.y - (chunk.start - yAxisMin) * oneDataYPx //
-            val Y2 = axisPoints.point0.y - (chunk.end - yAxisMin) * oneDataYPx //
+            val X1 = drawAreaPoints.leftBottom.x
+            val X2 = drawAreaPoints.rightBottom.x
+            val Y1 = drawAreaPoints.leftBottom.y - (chunk.start - yAxisMin) * oneDataYPx //
+            val Y2 = drawAreaPoints.leftBottom.y - (chunk.end - yAxisMin) * oneDataYPx //
 
             drawRect(
                 color = chunk.color,
-                topLeft = Offset(x = axisPoints.point0.x, y = Y1),
+                topLeft = Offset(x = drawAreaPoints.leftBottom.x, y = Y1),
                 size = Size(X2 - X1, Y2 - Y1)
             )
         }
@@ -1263,13 +1260,13 @@ fun drawYChunk(
 
 /**
  * @author Brian
- * @Description:画线
+ * @Description:鐢荤嚎
  */
 fun drawXLimitLine(
     drawScope: DrawScope,
 
-    xLimitLineList: MutableList<LimitLine>? = null,//Y轴上画线
-    axisPoints: AxisPoints,
+    xLimitLineList: MutableList<LimitLine>? = null,//Y杞翠笂鐢荤嚎
+    drawAreaPoints: DrawAreaPoints,
     axisMin: Float,
     axisMax: Float,
     scale: Float
@@ -1278,12 +1275,12 @@ fun drawXLimitLine(
     drawScope.run {
 
         val oneDataXPx =
-            (axisPoints.point1.x - axisPoints.point0.x) / (axisMax - axisMin) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (axisMax - axisMin) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
 
         xLimitLineList?.forEachIndexed { index, limitLine ->
-            val X1 = axisPoints.point0.x + (limitLine.value - axisMin) * oneDataXPx //转换为对应的X Px
-            val Y1 = axisPoints.point3.y
-            val Y2 = axisPoints.point0.y
+            val X1 = drawAreaPoints.leftBottom.x + (limitLine.value - axisMin) * oneDataXPx //杞崲涓哄搴旂殑X Px
+            val Y1 = drawAreaPoints.leftTop.y
+            val Y2 = drawAreaPoints.leftBottom.y
             val widthPx = limitLine.width.toPx()
             val dashPathEffect = if (limitLine.isDashes) {
                 PathEffect.dashPathEffect(floatArrayOf(10f, 4f), 4f)
@@ -1307,13 +1304,13 @@ fun drawXLimitLine(
                     pathEffect = dashPathEffect,
                     strokeWidth = widthPx
                 )
-                //文字
+                //鏂囧瓧
                 var textSizePx = limitLine.textSize.toPx()
                 val nativePaint = Paint().let {
                     it.apply {
                         textSize = textSizePx
                         color = limitLine.color.toArgb()
-                        isAntiAlias = true//抗锯齿
+                        isAntiAlias = true//鎶楅敮榻?
                     }
                 }
 
@@ -1337,8 +1334,8 @@ fun drawXLimitLine(
 
 fun drawYLimitLine(
     drawScope: DrawScope,
-    yLimitLineList: MutableList<LimitLine>? = null,//Y轴上画线
-    axisPoints: AxisPoints,
+    yLimitLineList: MutableList<LimitLine>? = null,//Y杞翠笂鐢荤嚎
+    drawAreaPoints: DrawAreaPoints,
     axisMin: Float,
     axisMax: Float,
     scale: Float
@@ -1346,14 +1343,14 @@ fun drawYLimitLine(
     drawScope.run {
 
         val oneDataYPx =
-            (axisPoints.point0.y - axisPoints.point3.y) / (axisMax - axisMin) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (axisMax - axisMin) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
 
         yLimitLineList?.forEachIndexed { index, limitLine ->
-            val X1 = axisPoints.point0.x
-            val X2 = axisPoints.point1.x
-            val Y1 = axisPoints.point0.y - (limitLine.value - axisMin) * oneDataYPx //转换为对应的Y Px
+            val X1 = drawAreaPoints.leftBottom.x
+            val X2 = drawAreaPoints.rightBottom.x
+            val Y1 = drawAreaPoints.leftBottom.y - (limitLine.value - axisMin) * oneDataYPx //杞崲涓哄搴旂殑Y Px
 
-            //直线
+            //鐩寸嚎
             val dashPathEffect = if (limitLine.isDashes) {
                 PathEffect.dashPathEffect(floatArrayOf(10f, 4f), 4f)
             } else {
@@ -1380,13 +1377,13 @@ fun drawYLimitLine(
 
 
                 )
-                //文字
+                //鏂囧瓧
                 var textSizePx = limitLine.textSize.toPx()
                 val nativePaint = Paint().let {
                     it.apply {
                         textSize = textSizePx
                         color = limitLine.color.toArgb()
-                        isAntiAlias = true//抗锯齿
+                        isAntiAlias = true//鎶楅敮榻?
                     }
                 }
 
@@ -1406,12 +1403,12 @@ fun drawYLimitLine(
 
 /**
  * @author Brian
- * @Description:画线
+ * @Description:鐢荤嚎
  */
 fun drawXGridLine(
     drawScope: DrawScope,
-    gridLine: GridLine? = null,//Y轴上画线
-    axisPoints: AxisPoints,
+    gridLine: GridLine? = null,//Y杞翠笂鐢荤嚎
+    drawAreaPoints: DrawAreaPoints,
     xAxisMin: Float,
     xAxisMax: Float,
     scale: Float
@@ -1420,14 +1417,14 @@ fun drawXGridLine(
     drawScope.run {
 
         val oneDataXPx =
-            (axisPoints.point1.x - axisPoints.point0.x) / (xAxisMax - xAxisMin) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (xAxisMax - xAxisMin) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
         gridLine?.let {
             val gridNum = ((xAxisMax - xAxisMin) / it.interval).toInt()
             it.interval * oneDataXPx
             for (i in 0..gridNum) {
-                val X1 = axisPoints.point0.x + i * it.interval * oneDataXPx //转换为对应的X Px
-                val Y1 = axisPoints.point3.y
-                val Y2 = axisPoints.point0.y
+                val X1 = drawAreaPoints.leftBottom.x + i * it.interval * oneDataXPx //杞崲涓哄搴旂殑X Px
+                val Y1 = drawAreaPoints.leftTop.y
+                val Y2 = drawAreaPoints.leftBottom.y
                 val widthPx = it.width.toPx()
                 val dashPathEffect = if (it.isDashes) {
                     PathEffect.dashPathEffect(floatArrayOf(10f, 4f), 4f)
@@ -1456,8 +1453,8 @@ fun drawXGridLine(
 
 fun drawYGridLine(
     drawScope: DrawScope,
-    gridLine: GridLine? = null,//Y轴上画线
-    axisPoints: AxisPoints,
+    gridLine: GridLine? = null,//Y杞翠笂鐢荤嚎
+    drawAreaPoints: DrawAreaPoints,
     xAxisMin: Float,
     xAxisMax: Float,
     scale: Float
@@ -1465,15 +1462,15 @@ fun drawYGridLine(
     drawScope.run {
 
         val oneDataYPx =
-            (axisPoints.point0.y - axisPoints.point3.y) / (xAxisMax - xAxisMin) // X轴上 1f单位数据点对应的px数
+            (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (xAxisMax - xAxisMin) // X杞翠笂 1f鍗曚綅鏁版嵁鐐瑰搴旂殑px鏁?
         gridLine?.let {
             val gridNum = ((xAxisMax - xAxisMin) / it.interval).toInt()
             for (i in 0..gridNum) {
-                val X1 = axisPoints.point0.x
-                val X2 = axisPoints.point1.x
-                val Y1 = axisPoints.point0.y - i * it.interval * oneDataYPx //转换为对应的Y Px
+                val X1 = drawAreaPoints.leftBottom.x
+                val X2 = drawAreaPoints.rightBottom.x
+                val Y1 = drawAreaPoints.leftBottom.y - i * it.interval * oneDataYPx //杞崲涓哄搴旂殑Y Px
 
-                //直线
+                //鐩寸嚎
                 val dashPathEffect = if (it.isDashes) {
                     PathEffect.dashPathEffect(floatArrayOf(10f, 4f), 4f)
                 } else {
@@ -1504,7 +1501,7 @@ fun drawGrideLine(
     yLeftAxis: Axis? = null,
     yRightInsideAxis: Axis? = null,
     yRightAxis: Axis? = null,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     scale: Float
 ) {
     drawScope.run {
@@ -1513,7 +1510,7 @@ fun drawGrideLine(
                 drawXGridLine(
                     drawScope = this,
                     gridLine = gridLine,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     xAxisMax = it.max,
                     xAxisMin = it.min,
                     scale = scale,
@@ -1528,7 +1525,7 @@ fun drawGrideLine(
                 drawYGridLine(
                     drawScope = this,
                     gridLine = gridLine,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     xAxisMax = it.max,
                     xAxisMin = it.min,
                     scale = scale,
@@ -1541,7 +1538,7 @@ fun drawGrideLine(
                 drawYGridLine(
                     drawScope = this,
                     gridLine = gridLine,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     xAxisMax = it.max,
                     xAxisMin = it.min,
                     scale = scale,
@@ -1555,7 +1552,7 @@ fun drawGrideLine(
                 drawYGridLine(
                     drawScope = this,
                     gridLine = gridLine,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     xAxisMax = it.max,
                     xAxisMin = it.min,
                     scale = scale,
@@ -1569,7 +1566,7 @@ fun drawGrideLine(
                 drawYGridLine(
                     drawScope = this,
                     gridLine = gridLine,
-                    axisPoints = axisPoints,
+                    drawAreaPoints = drawAreaPoints,
                     xAxisMax = it.max,
                     xAxisMin = it.min,
                     scale = scale,
@@ -1583,54 +1580,54 @@ fun drawGrideLine(
 
 
 /**
- * 将像素X坐标转换为数据X坐标
+ * 灏嗗儚绱燲鍧愭爣杞崲涓烘暟鎹甔鍧愭爣
  */
 fun convertPixelToDataX(
     pixelX: Float,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     xAxisMin: Float,
     xAxisMax: Float,
     scale: Float
 ): Float {
-    val oneDataXPx = (axisPoints.point1.x - axisPoints.point0.x) / (xAxisMax - xAxisMin)
+    val oneDataXPx = (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (xAxisMax - xAxisMin)
     val offsetXPx = xAxisMin * oneDataXPx
-    val raw = (pixelX - axisPoints.point0.x + offsetXPx) / (oneDataXPx * scale)
-    // 限制在 xAxis 的范围内，避免越界触摸带来超出轴范围的 data 值
+    val raw = (pixelX - drawAreaPoints.leftBottom.x + offsetXPx) / (oneDataXPx * scale)
+    // 闄愬埗鍦?xAxis 鐨勮寖鍥村唴锛岄伩鍏嶈秺鐣岃Е鎽稿甫鏉ヨ秴鍑鸿酱鑼冨洿鐨?data 鍊?
     return raw.coerceIn(xAxisMin, xAxisMax)
 }
 
 /**
- * 将像素Y坐标转换为数据Y坐标（单个Y轴）
+ * 灏嗗儚绱燳鍧愭爣杞崲涓烘暟鎹甕鍧愭爣锛堝崟涓猋杞达級
  */
 fun convertPixelToDataY(
     pixelY: Float,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     yLeftInsideAxis: Axis?,
     yLeftAxis: Axis?,
     yRightInsideAxis: Axis?,
     yRightAxis: Axis?
 ): Float {
-    // 优先使用左内轴，其次左外轴，最后右轴
+    // 浼樺厛浣跨敤宸﹀唴杞达紝鍏舵宸﹀杞达紝鏈€鍚庡彸杞?
     val yAxis = yLeftInsideAxis ?: yLeftAxis ?: yRightInsideAxis ?: yRightAxis ?: return 0f
-    val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (yAxis.max - yAxis.min)
+    val oneDataYPx = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yAxis.max - yAxis.min)
     val offsetYPx = yAxis.min * oneDataYPx
-    val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
-    // 限制在对应 y 轴范围内
+    val raw = (drawAreaPoints.leftBottom.y - pixelY + offsetYPx) / oneDataYPx
+    // 闄愬埗鍦ㄥ搴?y 杞磋寖鍥村唴
     return raw.coerceIn(yAxis.min, yAxis.max)
 }
 /**
- * 将像素Y坐标转换为数据Y坐标（单个Y轴）
+ * 灏嗗儚绱燳鍧愭爣杞崲涓烘暟鎹甕鍧愭爣锛堝崟涓猋杞达級
  */
 fun convertPixelToDataY(
     pixelY: Float,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     yLeftAxis: Axis?,
 ): Float {
-    // 优先使用左内轴，其次左外轴，最后右轴
+    // 浼樺厛浣跨敤宸﹀唴杞达紝鍏舵宸﹀杞达紝鏈€鍚庡彸杞?
     val yAxis = yLeftAxis ?: return 0f
-    val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (yAxis.max - yAxis.min)
+    val oneDataYPx = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yAxis.max - yAxis.min)
     val offsetYPx = yAxis.min * oneDataYPx
-    val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
-    // 限制在对应 y 轴范围内
+    val raw = (drawAreaPoints.leftBottom.y - pixelY + offsetYPx) / oneDataYPx
+    // 闄愬埗鍦ㄥ搴?y 杞磋寖鍥村唴
     return raw.coerceIn(yAxis.min, yAxis.max)
 }

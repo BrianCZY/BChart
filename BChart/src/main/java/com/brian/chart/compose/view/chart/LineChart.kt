@@ -156,7 +156,7 @@ fun LineChart(
                             if (lineListNew.isNotEmpty()) {
                                 createCurvePathOrPoints(
                                     lineList = lineListNew.toMutableList(),
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMax = xAxis.max,
                                     xAxisMin = xAxis.min,
                                     yAxisMax = yAxis.max,
@@ -175,7 +175,7 @@ fun LineChart(
                             if (lineListNew.isNotEmpty()) {
                                 createCurvePathOrPoints(
                                     lineList = lineListNew.toMutableList(),
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     yAxisMin = yAxis.min,
@@ -194,7 +194,7 @@ fun LineChart(
                             if (lineListNew.isNotEmpty()) {
                                 createCurvePathOrPoints(
                                     lineList = lineListNew.toMutableList(),
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     yAxisMin = yAxis.min,
@@ -213,7 +213,7 @@ fun LineChart(
                             if (lineListNew.isNotEmpty()) {
                                 createCurvePathOrPoints(
                                     lineList = lineListNew.toMutableList(),
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     yAxisMin = yAxis.min,
@@ -267,14 +267,14 @@ fun LineChart(
                         // 处理 DOWN 事件
                         val downDataX = convertPixelToDataX(
                             pixelX = down.position.x,
-                            axisPoints = axisPoints,
+                            drawAreaPoints = axisPoints,
                             xAxisMin = xAxis.min,
                             xAxisMax = xAxis.max,
                             scale = scale
                         )
                         val (downDataYLeftInside, downDataYLeft, downDataYRight) = convertPixelToAllDataY(
                             pixelY = down.position.y,
-                            axisPoints = axisPoints,
+                            drawAreaPoints = axisPoints,
                             yLeftInsideAxis = yLeftInsideAxis,
                             yLeftAxis = yLeftAxis,
                             yRightInsideAxis = yRightInsideAxis,
@@ -285,7 +285,7 @@ fun LineChart(
                             touchX = down.position.x,
                             touchY = down.position.y,
                             lineList = lineList ?: emptyList(),
-                            axisPoints = axisPoints,
+                            drawAreaPoints = axisPoints,
                             xAxisMin = xAxis.min,
                             xAxisMax = xAxis.max,
                             yAxisMin = yLeftInsideAxis?.min ?: yLeftAxis?.min ?: yRightAxis?.min
@@ -316,11 +316,11 @@ fun LineChart(
 
                         // 缓存常用值，避免在高频 MOVE 中重复计算
                         val oneDataXPx =
-                            (axisPoints.point1.x - axisPoints.point0.x) / (xAxis.max - xAxis.min)
+                            (axisPoints.rightBottom.x - axisPoints.leftBottom.x) / (xAxis.max - xAxis.min)
                         // 选择一个主要的 Y 轴用于快速 dataY 计算（优先左内轴）
                         val primaryYAxis = yLeftInsideAxis ?: yLeftAxis ?: yRightAxis
                         val oneDataYPx =
-                            primaryYAxis?.let { (axisPoints.point0.y - axisPoints.point3.y) / (it.max - it.min) }
+                            primaryYAxis?.let { (axisPoints.leftBottom.y - axisPoints.leftTop.y) / (it.max - it.min) }
                         val offsetXPx = xAxis.min * oneDataXPx
                         val offsetYPx = primaryYAxis?.let { it.min * (oneDataYPx ?: 0f) } ?: 0f
 
@@ -341,14 +341,14 @@ fun LineChart(
                                 // 使用统一的转换函数（包含边界裁剪）以保证 dataX/dataY 在 axis.min..axis.max 之内
                                 val upDataX = convertPixelToDataX(
                                     pixelX = upPos.x,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     scale = scale
                                 )
                                 val upDataY = convertPixelToDataY(
                                     pixelY = upPos.y,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     yLeftInsideAxis = yLeftInsideAxis,
                                     yLeftAxis = yLeftAxis,
                                     yRightInsideAxis = yRightInsideAxis,
@@ -360,7 +360,7 @@ fun LineChart(
                                     touchX = upPos.x,
                                     touchY = upPos.y,
                                     lineList = lineList ?: emptyList(),
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     yAxisMin = yLeftInsideAxis?.min ?: yLeftAxis?.min
@@ -405,14 +405,14 @@ fun LineChart(
                                 // 使用统一的转换函数以保持一致性并裁剪到轴范围内
                                 val mvDataX = convertPixelToDataX(
                                     pixelX = mvPos.x,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     xAxisMin = xAxis.min,
                                     xAxisMax = xAxis.max,
                                     scale = scale
                                 )
                                 val mvDataY = convertPixelToDataY(
                                     pixelY = mvPos.y,
-                                    axisPoints = axisPoints,
+                                    drawAreaPoints = axisPoints,
                                     yLeftInsideAxis = yLeftInsideAxis,
                                     yLeftAxis = yLeftAxis,
                                     yRightInsideAxis = yRightInsideAxis,
@@ -426,7 +426,7 @@ fun LineChart(
                                         touchX = mvPos.x,
                                         touchY = mvPos.y,
                                         lineList = lineList ?: emptyList(),
-                                        axisPoints = axisPoints,
+                                        drawAreaPoints = axisPoints,
                                         xAxisMin = xAxis.min,
                                         xAxisMax = xAxis.max,
                                         yAxisMin = yLeftInsideAxis?.min ?: yLeftAxis?.min
@@ -482,7 +482,7 @@ fun LineChart(
                                 yLeftAxis,
                                 yRightInsideAxis,
                                 yRightAxis,
-                                axisPoints = axisPoints,
+                                drawAreaPoints = axisPoints,
                                 scale = scale
                             )
                             /**画chunk 块内容*/
@@ -493,7 +493,7 @@ fun LineChart(
                                 yLeftAxis,
                                 yRightInsideAxis,
                                 yRightAxis,
-                                axisPoints = axisPoints,
+                                drawAreaPoints = axisPoints,
                             )
                             /**画xy轴*/
                             drawXYAxis(
@@ -503,7 +503,7 @@ fun LineChart(
                                 yLeftAxis,
                                 yRightInsideAxis,
                                 yRightAxis,
-                                axisPoints = axisPoints,
+                                drawAreaPoints = axisPoints,
                             )
                             /**刻度 label*/
                             drawLable(
@@ -513,7 +513,7 @@ fun LineChart(
                                 yLeftAxis,
                                 yRightInsideAxis,
                                 yRightAxis,
-                                axisPoints = axisPoints,
+                                drawAreaPoints = axisPoints,
                                 scale = scale
                             )
 
@@ -525,7 +525,7 @@ fun LineChart(
                                 yLeftAxis,
                                 yRightInsideAxis,
                                 yRightAxis,
-                                axisPoints = axisPoints,
+                                drawAreaPoints = axisPoints,
                                 scale = scale
                             )
 
@@ -620,7 +620,7 @@ private fun getAxisPoints(
     density: Density,
     textMeasurer: TextMeasurer,
     size: IntSize,
-): AxisPoints {
+): DrawAreaPoints {
 
     var startPx: Float? = null
     var endPx: Float? = null
@@ -688,7 +688,7 @@ private fun getAxisPoints(
     )//左上角点
 
 
-    return AxisPoints(point0, point1, point2, point3)
+    return DrawAreaPoints(leftBottom = point0, rightBottom = point1, rightTop = point2, leftTop = point3)
 }
 
 /**
@@ -832,7 +832,7 @@ private fun DrawScope.drawPathWithDashEffect(
 
 fun createCurvePathOrPoints(
     lineList: MutableList<Line>,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     xAxisMin: Float,
     xAxisMax: Float,
     yAxisMin: Float,
@@ -844,9 +844,9 @@ fun createCurvePathOrPoints(
     ): MutableList<PathAndPoints> {
 
     val oneDataXPx =
-        (axisPoints.point1.x - axisPoints.point0.x) / (xAxisMax - xAxisMin) // X轴上 1f单位数据点对应的px数
+        (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (xAxisMax - xAxisMin) // X轴上 1f单位数据点对应的px数
     val oneDataYPx =
-        (axisPoints.point0.y - axisPoints.point3.y) / (yAxisMax - yAxisMin) // X轴上 1f单位数据点对应的px数
+        (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yAxisMax - yAxisMin) // X轴上 1f单位数据点对应的px数
     val offsetXPx = xAxisMin * oneDataXPx
     val offsetYPx = yAxisMin * oneDataYPx
     val tmpPathAndPointsList = pathAndPointsList ?: mutableListOf<PathAndPoints>()
@@ -880,8 +880,8 @@ fun createCurvePathOrPoints(
             pathAndPoints.offsetList =
                 getPoints(
                     line.pointList,
-                    axisPoints.point0.x,
-                    axisPoints.point0.y,
+                    drawAreaPoints.leftBottom.x,
+                    drawAreaPoints.leftBottom.y,
                     oneDataXPx,
                     oneDataYPx,
                     offsetXPx,
@@ -894,8 +894,8 @@ fun createCurvePathOrPoints(
 
             pathAndPoints.path =   createPath(
                 line.pointList,
-                axisPoints.point0.x,
-                axisPoints.point0.y,
+                drawAreaPoints.leftBottom.x,
+                drawAreaPoints.leftBottom.y,
                 oneDataXPx,
                 oneDataYPx,
                 offsetXPx,
@@ -913,8 +913,8 @@ fun createCurvePathOrPoints(
                 }
                 pathAndPoints.areaPath =   createPath(
                     pointList,
-                    axisPoints.point0.x,
-                    axisPoints.point0.y,
+                    drawAreaPoints.leftBottom.x,
+                    drawAreaPoints.leftBottom.y,
                     oneDataXPx,
                     oneDataYPx,
                     offsetXPx,
@@ -1719,37 +1719,37 @@ fun getCubicPathCatmullRom(
  */
 private fun convertPixelToAllDataY(
     pixelY: Float,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     yLeftInsideAxis: Axis?,
     yLeftAxis: Axis?,
     yRightInsideAxis: Axis?,
     yRightAxis: Axis?
 ): Triple<Float?, Float?, Float?> {
     val dataYLeftInside = yLeftInsideAxis?.let { axis ->
-        val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (axis.max - axis.min)
+        val oneDataYPx = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (axis.max - axis.min)
         val offsetYPx = axis.min * oneDataYPx
-        val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
+        val raw = (drawAreaPoints.leftBottom.y - pixelY + offsetYPx) / oneDataYPx
         raw.coerceIn(axis.min, axis.max)
     }
 
     val dataYLeft = yLeftAxis?.let { axis ->
-        val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (axis.max - axis.min)
+        val oneDataYPx = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (axis.max - axis.min)
         val offsetYPx = axis.min * oneDataYPx
-        val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
+        val raw = (drawAreaPoints.leftBottom.y - pixelY + offsetYPx) / oneDataYPx
         raw.coerceIn(axis.min, axis.max)
     }
 
     val dataYRightInside = yRightInsideAxis?.let { axis ->
-        val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (axis.max - axis.min)
+        val oneDataYPx = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (axis.max - axis.min)
         val offsetYPx = axis.min * oneDataYPx
-        val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
+        val raw = (drawAreaPoints.leftBottom.y - pixelY + offsetYPx) / oneDataYPx
         raw.coerceIn(axis.min, axis.max)
     }
 
     val dataYRight = yRightAxis?.let { axis ->
-        val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (axis.max - axis.min)
+        val oneDataYPx = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (axis.max - axis.min)
         val offsetYPx = axis.min * oneDataYPx
-        val raw = (axisPoints.point0.y - pixelY + offsetYPx) / oneDataYPx
+        val raw = (drawAreaPoints.leftBottom.y - pixelY + offsetYPx) / oneDataYPx
         raw.coerceIn(axis.min, axis.max)
     }
 
@@ -1763,7 +1763,7 @@ private fun findNearestDataPoint(
     touchX: Float,
     touchY: Float,
     lineList: List<Line>,
-    axisPoints: AxisPoints,
+    drawAreaPoints: DrawAreaPoints,
     xAxisMin: Float,
     xAxisMax: Float,
     yAxisMin: Float,
@@ -1778,11 +1778,11 @@ private fun findNearestDataPoint(
     lineList.forEach { line ->
         line.pointList.forEach { point ->
             // 计算数据点在屏幕上的像素位置
-            val oneDataXPx = (axisPoints.point1.x - axisPoints.point0.x) / (xAxisMax - xAxisMin)
-            val oneDataYPx = (axisPoints.point0.y - axisPoints.point3.y) / (yAxisMax - yAxisMin)
+            val oneDataXPx = (drawAreaPoints.rightBottom.x - drawAreaPoints.leftBottom.x) / (xAxisMax - xAxisMin)
+            val oneDataYPx = (drawAreaPoints.leftBottom.y - drawAreaPoints.leftTop.y) / (yAxisMax - yAxisMin)
 
-            val pixelX = axisPoints.point0.x + (point.x - xAxisMin) * oneDataXPx * scale
-            val pixelY = axisPoints.point0.y - (point.y - yAxisMin) * oneDataYPx
+            val pixelX = drawAreaPoints.leftBottom.x + (point.x - xAxisMin) * oneDataXPx * scale
+            val pixelY = drawAreaPoints.leftBottom.y - (point.y - yAxisMin) * oneDataYPx
 
             // 计算欧几里得距离
             val distance = kotlin.math.sqrt(
