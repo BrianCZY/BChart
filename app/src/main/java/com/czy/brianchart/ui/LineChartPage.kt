@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brian.chart.compose.view.chart.Axis
-import com.brian.chart.compose.view.chart.AxisType
+import com.brian.chart.compose.view.chart.LineType
 import com.brian.chart.compose.view.chart.Chunk
 import com.brian.chart.compose.view.chart.GridLine
 import com.brian.chart.compose.view.chart.LimitLine
@@ -60,7 +60,6 @@ import com.brian.chart.compose.view.chart.Line
 import com.brian.chart.compose.view.chart.LineChart
 import com.brian.chart.compose.view.chart.LineChartData
 import com.brian.chart.compose.view.chart.Point
-import com.brian.chart.compose.view.chart.Renderer
 import com.brian.chart.compose.view.chart.TouchEventData
 import com.brian.chart.compose.view.chart.TouchEventType
 import com.czy.brianchart.ui.components.TopBar
@@ -344,9 +343,9 @@ fun drawSelfDefinedText(ds: DrawScope, offset: Offset, x: Float, y: Float, color
 
 fun getTestLineList2(): MutableList<Line> {
     return mutableListOf(
-        Line(listOf(Point(0f, 10f), Point(5f, 100f), Point(10f, 30f), Point(15f, 200f), Point(20f, 120f), Point(25f, 10f), Point(30f, 180f), Point(35f, 100f), Point(40f, 10f)), color = Color(0XFF18D276), axisType = AxisType.LEFT_INSIDE),
+        Line(listOf(Point(0f, 10f), Point(5f, 100f), Point(10f, 30f), Point(15f, 200f), Point(20f, 120f), Point(25f, 10f), Point(30f, 180f), Point(35f, 100f), Point(40f, 10f)), color = Color(0XFF18D276), axisType = LineType.LEFT_INSIDE),
         Line(listOf(Point(0f, 1000f), Point(5f, 1000f), Point(10f, 2000f), Point(15f, 120f), Point(20f, 1120f), Point(25f, 1000f), Point(30f, 180f), Point(35f, 100f), Point(40f, 1000f)), color = Color(0XFFFF4E87), isDrawCubic = true, isDashes = true),
-        Line(listOf(Point(0f, 1200f), Point(5f, 100f), Point(10f, 2200f), Point(15f, 600f), Point(20f, 120f), Point(25f, 1500f), Point(30f, 680f), Point(35f, 200f), Point(40f, 1500f)), color = Color(0XFF058BF6), axisType = AxisType.RIGHT, isDrawCubic = true))
+        Line(listOf(Point(0f, 1200f), Point(5f, 100f), Point(10f, 2200f), Point(15f, 600f), Point(20f, 120f), Point(25f, 1500f), Point(30f, 680f), Point(35f, 200f), Point(40f, 1500f)), color = Color(0XFF058BF6), axisType = LineType.RIGHT, isDrawCubic = true))
 }
 
 fun drawableToBitmap(drawable: Drawable? = null): ImageBitmap? {

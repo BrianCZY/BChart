@@ -13,7 +13,7 @@ data class Line(
     var pointList: List<Point> = emptyList(),
     var color: Color = Color.Blue,
     var isDrawCubic: Boolean = false, // 是否启用贝塞尔曲线)
-    var axisType: AxisType = AxisType.LEFT,
+    var axisType: LineType = LineType.LEFT,
     var tag: String = "",
     var width: Dp = 1.dp,
     var isDrawPath: Boolean = true,//画曲线
@@ -24,6 +24,6 @@ data class Line(
     var isPoints: Boolean = false, // 是否启用散点
     var pathEffect: PathEffect? = null,// 虚线样式（自定义），null：则使用默认的样式
     var renderer: ((drawScope: DrawScope, line: Line?, offsetList: List<Offset>?) -> Unit)? = Renderer::emptyRenderer,//渲染器,自定义绘制
-    var code: String = "${AxisType.LEFT.name}_${System.nanoTime()}_${Random.nextInt(100000)}",//创建Line时，生成一个code,用于区分Line
+    var code: String = "${LineType.LEFT.name}_${System.nanoTime()}_${Random.nextInt(100000)}",//创建Line时，生成一个code,用于区分Line
 
 )

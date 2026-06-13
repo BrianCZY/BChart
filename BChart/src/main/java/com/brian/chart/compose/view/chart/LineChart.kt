@@ -130,7 +130,7 @@ fun LineChart(
         }
 
         var previousListCurvePathOrPoints by remember {
-            mutableStateOf<Map<AxisType, MutableList<PathAndPoints>>>(emptyMap())
+            mutableStateOf<Map<LineType, MutableList<PathAndPoints>>>(emptyMap())
         }
         // 在 drawWithCache 外部计算曲线路径
         val listCurvePathOrPoints by remember(
@@ -148,10 +148,10 @@ fun LineChart(
             yRightAxis?.min
         ) {
             derivedStateOf {
-                mutableMapOf<AxisType, MutableList<PathAndPoints>>().apply {
+                mutableMapOf<LineType, MutableList<PathAndPoints>>().apply {
                     lineList?.let { lines ->
                         yLeftInsideAxis?.let { yAxis ->
-                            val lineListNew = lines.filter { it.axisType == AxisType.LEFT_INSIDE }
+                            val lineListNew = lines.filter { it.axisType == LineType.LEFT_INSIDE }
                             if (lineListNew.isNotEmpty()) {
                                 createCurvePathOrPoints(
                                     lineList = lineListNew.toMutableList(),
@@ -162,15 +162,15 @@ fun LineChart(
                                     yAxisMin = yAxis.min,
                                     scale = scale,
                                     xAxisPosition = xAxis.position ?: 0f,
-                                    pathAndPointsList = previousListCurvePathOrPoints.get(AxisType.LEFT_INSIDE)
+                                    pathAndPointsList = previousListCurvePathOrPoints.get(LineType.LEFT_INSIDE)
                                 ).let {
-                                    put(AxisType.LEFT_INSIDE, it)
+                                    put(LineType.LEFT_INSIDE, it)
                                 }
                             }
                         }
 
                         yLeftAxis?.let { yAxis ->
-                            val lineListNew = lines.filter { it.axisType == AxisType.LEFT }
+                            val lineListNew = lines.filter { it.axisType == LineType.LEFT }
                             if (lineListNew.isNotEmpty()) {
                                 createCurvePathOrPoints(
                                     lineList = lineListNew.toMutableList(),
@@ -181,15 +181,15 @@ fun LineChart(
                                     yAxisMax = yAxis.max,
                                     scale = scale,
                                     xAxisPosition = xAxis.position ?: 0f,
-                                    pathAndPointsList = previousListCurvePathOrPoints.get(AxisType.LEFT)
+                                    pathAndPointsList = previousListCurvePathOrPoints.get(LineType.LEFT)
                                 ).let {
-                                    put(AxisType.LEFT, it)
+                                    put(LineType.LEFT, it)
                                 }
                             }
                         }
 
                         yRightAxis?.let { yAxis ->
-                            val lineListNew = lines.filter { it.axisType == AxisType.RIGHT }
+                            val lineListNew = lines.filter { it.axisType == LineType.RIGHT }
                             if (lineListNew.isNotEmpty()) {
                                 createCurvePathOrPoints(
                                     lineList = lineListNew.toMutableList(),
@@ -200,9 +200,9 @@ fun LineChart(
                                     yAxisMax = yAxis.max,
                                     scale = scale,
                                     xAxisPosition = xAxis.position ?: 0f,
-                                    pathAndPointsList = previousListCurvePathOrPoints.get(AxisType.RIGHT)
+                                    pathAndPointsList = previousListCurvePathOrPoints.get(LineType.RIGHT)
                                 ).let {
-                                    put(AxisType.RIGHT, it)
+                                    put(LineType.RIGHT, it)
                                 }
                             }
                         }
@@ -555,17 +555,17 @@ private fun selfAdaptation(
     reSetXMax(xAxis, lineList)
     reSetXMin(xAxis, lineList)
     if (yLeftAxis != null) {
-        val lineListNew = lineList?.filter { it.axisType == AxisType.LEFT }
+        val lineListNew = lineList?.filter { it.axisType == LineType.LEFT }
         reSetYMax(yLeftAxis, lineListNew)
         reSetYMin(yLeftAxis, lineListNew)
     }
     if (yLeftInsideAxis != null) {
-        val lineListNew = lineList?.filter { it.axisType == AxisType.LEFT_INSIDE }
+        val lineListNew = lineList?.filter { it.axisType == LineType.LEFT_INSIDE }
         reSetYMax(yLeftInsideAxis, lineListNew)
         reSetYMin(yLeftInsideAxis, lineListNew)
     }
     if (yRightAxis != null) {
-        val lineListNew = lineList?.filter { it.axisType == AxisType.RIGHT }
+        val lineListNew = lineList?.filter { it.axisType == LineType.RIGHT }
         reSetYMax(yRightAxis, lineListNew)
         reSetYMin(yRightAxis, lineListNew)
     }
@@ -661,7 +661,7 @@ private fun getAxisPoints(
  */
 fun drawCurveSplashes(
     drawScope: DrawScope,
-    listCurvePathOrPoints: Map<AxisType, MutableList<PathAndPoints>>,
+    listCurvePathOrPoints: Map<LineType, MutableList<PathAndPoints>>,
 ) {
     listCurvePathOrPoints.forEach {
         it.value.let {
