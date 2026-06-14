@@ -1,4 +1,4 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.data
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -7,11 +7,14 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.brian.chart.compose.view.chart.data.Point
+import com.brian.chart.compose.view.chart.Renderer
+import com.brian.chart.compose.view.chart.enums.LineType
 import kotlin.random.Random
 
 data class Line(
     var pointList: List<Point> = emptyList(),
-    var color: Color = Color.Blue,
+    var color: Color = Color.Companion.Blue,
     var isDrawCubic: Boolean = false, // 是否启用贝塞尔曲线)
     var axisType: LineType = LineType.LEFT,
     var tag: String = "",
@@ -24,6 +27,6 @@ data class Line(
     var isPoints: Boolean = false, // 是否启用散点
     var pathEffect: PathEffect? = null,// 虚线样式（自定义），null：则使用默认的样式
     var renderer: ((drawScope: DrawScope, line: Line?, offsetList: List<Offset>?) -> Unit)? = Renderer::emptyRenderer,//渲染器,自定义绘制
-    var code: String = "${LineType.LEFT.name}_${System.nanoTime()}_${Random.nextInt(100000)}",//创建Line时，生成一个code,用于区分Line
+    var code: String = "${LineType.LEFT.name}_${System.nanoTime()}_${Random.Default.nextInt(100000)}",//创建Line时，生成一个code,用于区分Line
 
 )

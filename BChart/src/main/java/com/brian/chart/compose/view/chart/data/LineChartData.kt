@@ -1,5 +1,8 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.data
 
+import com.brian.chart.compose.view.chart.DrawAreaPadding
+import com.brian.chart.compose.view.chart.TouchEventData
+import com.brian.chart.compose.view.chart.enums.LimitLinePosition
 
 data class LineChartData(
     val lineList: List<Line>? = null,

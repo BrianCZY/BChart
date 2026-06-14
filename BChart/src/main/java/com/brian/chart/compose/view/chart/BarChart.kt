@@ -41,6 +41,11 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.brian.chart.compose.view.chart.data.Axis
+import com.brian.chart.compose.view.chart.data.BarChartData
+import com.brian.chart.compose.view.chart.data.DrawAreaPoints
+import com.brian.chart.compose.view.chart.data.Point
+import com.brian.chart.compose.view.chart.enums.LimitLinePosition
 import kotlin.math.abs
 
 /**
@@ -396,7 +401,12 @@ private fun getAxisPoints(
     )//左上角点
 
 
-    return DrawAreaPoints(leftBottom = point0, rightBottom = point1, rightTop = point2, leftTop = point3)
+    return DrawAreaPoints(
+        leftBottom = point0,
+        rightBottom = point1,
+        rightTop = point2,
+        leftTop = point3
+    )
 }
 
 /**

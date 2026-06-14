@@ -23,6 +23,10 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.brian.chart.compose.view.chart.data.EcgChartData
+import com.brian.chart.compose.view.chart.data.GrideDataSet
+import com.brian.chart.compose.view.chart.data.LineDataSet
+import com.brian.chart.compose.view.chart.data.PointDataSet
 import kotlinx.coroutines.launch
 
 /**

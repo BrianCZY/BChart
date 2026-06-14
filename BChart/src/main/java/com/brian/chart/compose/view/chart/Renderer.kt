@@ -2,6 +2,7 @@ package com.brian.chart.compose.view.chart
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import com.brian.chart.compose.view.chart.data.Line
 
 object Renderer {
     fun baseRenderer(drawScope: DrawScope, line: Line?, offsetList: List<Offset>?): Unit {

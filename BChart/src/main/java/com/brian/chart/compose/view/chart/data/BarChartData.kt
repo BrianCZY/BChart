@@ -1,5 +1,10 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.data
 
+import com.brian.chart.compose.view.chart.data.Axis
+import com.brian.chart.compose.view.chart.BarData
+import com.brian.chart.compose.view.chart.DrawAreaPadding
+import com.brian.chart.compose.view.chart.enums.LimitLinePosition
+import com.brian.chart.compose.view.chart.TouchEventData
 
 data class BarChartData(
     val barData: BarData? = null,

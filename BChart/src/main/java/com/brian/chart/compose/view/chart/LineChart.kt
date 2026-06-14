@@ -37,6 +37,14 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.sp
+import com.brian.chart.compose.view.chart.data.Axis
+import com.brian.chart.compose.view.chart.data.DrawAreaPoints
+import com.brian.chart.compose.view.chart.data.Line
+import com.brian.chart.compose.view.chart.data.LineChartData
+import com.brian.chart.compose.view.chart.data.PathAndPoints
+import com.brian.chart.compose.view.chart.data.Point
+import com.brian.chart.compose.view.chart.enums.LimitLinePosition
+import com.brian.chart.compose.view.chart.enums.LineType
 import java.math.BigDecimal
 
 private val TAG = "LineChart"
@@ -688,7 +696,12 @@ private fun getAxisPoints(
     )//左上角点
 
 
-    return DrawAreaPoints(leftBottom = point0, rightBottom = point1, rightTop = point2, leftTop = point3)
+    return DrawAreaPoints(
+        leftBottom = point0,
+        rightBottom = point1,
+        rightTop = point2,
+        leftTop = point3
+    )
 }
 
 /**

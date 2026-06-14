@@ -1,5 +1,6 @@
 package com.czy.brianchart.ui
 
+import android.R
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -51,15 +52,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.brian.chart.compose.view.chart.Axis
-import com.brian.chart.compose.view.chart.LineType
-import com.brian.chart.compose.view.chart.Chunk
-import com.brian.chart.compose.view.chart.GridLine
-import com.brian.chart.compose.view.chart.LimitLine
-import com.brian.chart.compose.view.chart.Line
+import com.brian.chart.compose.view.chart.data.Axis
+import com.brian.chart.compose.view.chart.enums.LineType
+import com.brian.chart.compose.view.chart.data.Chunk
+import com.brian.chart.compose.view.chart.data.GridLine
+import com.brian.chart.compose.view.chart.data.LimitLine
+import com.brian.chart.compose.view.chart.data.Line
 import com.brian.chart.compose.view.chart.LineChart
-import com.brian.chart.compose.view.chart.LineChartData
-import com.brian.chart.compose.view.chart.Point
+import com.brian.chart.compose.view.chart.data.LineChartData
+import com.brian.chart.compose.view.chart.data.Point
 import com.brian.chart.compose.view.chart.TouchEventData
 import com.brian.chart.compose.view.chart.TouchEventType
 import com.czy.brianchart.ui.components.TopBar
@@ -720,7 +721,7 @@ fun getTestLineListSelfDefined(context: Context): MutableList<Line> {
             selfDefinedValue = { ds, o ->
                 drawSelfDefinedBitmap(
                     ds,
-                    BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_edit)
+                    BitmapFactory.decodeResource(context.resources, R.drawable.ic_menu_edit)
                         .asImageBitmap(),
                     o
                 )
@@ -731,7 +732,7 @@ fun getTestLineListSelfDefined(context: Context): MutableList<Line> {
             selfDefinedValue = { ds, o ->
                 drawSelfDefinedBitmap(
                     ds,
-                    BitmapFactory.decodeResource(context.resources, android.R.drawable.ic_menu_edit)
+                    BitmapFactory.decodeResource(context.resources, R.drawable.ic_menu_edit)
                         .asImageBitmap(),
                     o
                 )

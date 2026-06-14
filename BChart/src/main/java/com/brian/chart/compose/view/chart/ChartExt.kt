@@ -10,6 +10,12 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import com.brian.chart.compose.view.chart.data.Axis
+import com.brian.chart.compose.view.chart.data.Chunk
+import com.brian.chart.compose.view.chart.data.DrawAreaPoints
+import com.brian.chart.compose.view.chart.data.GridLine
+import com.brian.chart.compose.view.chart.data.LimitLine
+import com.brian.chart.compose.view.chart.data.Point
 import java.math.BigDecimal
 
 

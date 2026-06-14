@@ -25,10 +25,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.brian.chart.compose.view.chart.EcgChart
-import com.brian.chart.compose.view.chart.EcgChartData
-import com.brian.chart.compose.view.chart.GrideDataSet
-import com.brian.chart.compose.view.chart.LineDataSet
-import com.brian.chart.compose.view.chart.PointDataSet
+import com.brian.chart.compose.view.chart.data.EcgChartData
+import com.brian.chart.compose.view.chart.data.GrideDataSet
+import com.brian.chart.compose.view.chart.data.LineDataSet
+import com.brian.chart.compose.view.chart.data.PointDataSet
 import com.czy.brianchart.ui.components.TopBar
 import com.czy.brianchart.ui.navigation.ChartNavigationActions
 import kotlinx.coroutines.Job

@@ -1,5 +1,6 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.data
 
+import com.brian.chart.compose.view.chart.data.Point
 
 data class DrawAreaPoints(
     val leftBottom: Point = Point(),//左下角

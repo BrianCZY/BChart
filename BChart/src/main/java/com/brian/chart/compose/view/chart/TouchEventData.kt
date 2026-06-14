@@ -1,6 +1,8 @@
 package com.brian.chart.compose.view.chart
 
 import androidx.compose.ui.geometry.Offset
+import com.brian.chart.compose.view.chart.data.Line
+import com.brian.chart.compose.view.chart.data.Point
 
 /**
  * 触摸事件数据类

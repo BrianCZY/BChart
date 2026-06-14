@@ -1,10 +1,13 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.data
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.brian.chart.compose.view.chart.data.Chunk
+import com.brian.chart.compose.view.chart.data.GridLine
+import com.brian.chart.compose.view.chart.data.LimitLine
 
 data class Axis(
     var min: Float = 00f,//默认最小值
@@ -14,7 +17,7 @@ data class Axis(
     var scaleInterval: Float? = null,//X轴刻度的间隔
     var labelTextSize: TextUnit = 12.sp,//标签的字体大小
     var scaleLengSize: Dp = 4.dp,//刻度的长度
-    var color: Color = Color.Gray,
+    var color: Color = Color.Companion.Gray,
     var strokeSize: Dp = 1.dp,
     var name: String? = null,
     var chunkList: MutableList<Chunk>? = null,//画块 范围

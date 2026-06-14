@@ -1,4 +1,4 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.enums
 
 enum class LineType(type: Int) {
     LEFT(1),

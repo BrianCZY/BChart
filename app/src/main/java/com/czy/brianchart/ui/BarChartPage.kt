@@ -1,5 +1,6 @@
 package com.czy.brianchart.ui
 
+import android.graphics.Paint
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,14 +34,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.brian.chart.compose.view.chart.Axis
+import com.brian.chart.compose.view.chart.data.Axis
 import com.brian.chart.compose.view.chart.BarChart
-import com.brian.chart.compose.view.chart.BarChartData
+import com.brian.chart.compose.view.chart.data.BarChartData
 import com.brian.chart.compose.view.chart.BarData
 import com.brian.chart.compose.view.chart.BarDataSet
 import com.brian.chart.compose.view.chart.BarEntry
-import com.brian.chart.compose.view.chart.Chunk
-import com.brian.chart.compose.view.chart.LimitLine
+import com.brian.chart.compose.view.chart.data.Chunk
+import com.brian.chart.compose.view.chart.data.LimitLine
 import com.czy.brianchart.ui.components.TopBar
 import com.czy.brianchart.ui.navigation.ChartNavigationActions
 import com.czy.brianchart.ui.theme.BrianChartTheme
@@ -291,7 +292,7 @@ fun BarChartPreviewRenderer() {
                         ds.drawRoundRect(color = Color.Blue.copy(alpha = 0.7f), topLeft = offset, size = size, cornerRadius = CornerRadius(8f, 8f))
                         ds.drawCircle(color = Color.Blue, radius = 8f, center = Offset(offset.x + size.width / 2, offset.y))
                         val label = "${value.toInt()}"; val ts = 10.sp.toPx()
-                        val p = android.graphics.Paint().apply { textSize = ts; setColor(Color.White.toArgb()); isAntiAlias = true }
+                        val p = Paint().apply { textSize = ts; setColor(Color.White.toArgb()); isAntiAlias = true }
                         ds.drawContext.canvas.nativeCanvas.drawText(label, offset.x + size.width / 2 - (label.length * ts) / 4, offset.y + size.height / 2 + ts / 3, p)
                     }
                 }),
@@ -300,7 +301,7 @@ fun BarChartPreviewRenderer() {
                     with(density) {
                         ds.drawRoundRect(color = Color.Red.copy(alpha = 0.6f), topLeft = offset, size = size, cornerRadius = CornerRadius(4f, 4f))
                         val label = "${value.toInt()}"; val ts = 10.sp.toPx()
-                        val p = android.graphics.Paint().apply { textSize = ts; setColor(Color.Red.toArgb()); isAntiAlias = true }
+                        val p = Paint().apply { textSize = ts; setColor(Color.Red.toArgb()); isAntiAlias = true }
                         ds.drawContext.canvas.nativeCanvas.drawText(label, offset.x + size.width / 2 - (label.length * ts) / 4, offset.y + size.height + ts + 4f, p)
                     }
                 })), color = Color.Gray, showValue = true)), width = 60.dp),
@@ -348,7 +349,7 @@ fun BarChartPreviewStackedWithCustomRenderer() {
                         val r = when (stackIndex) { 0 -> 12f; 1 -> 0f; else -> 6f }
                         drawRoundRect(color = c, topLeft = offset, size = size, cornerRadius = CornerRadius(r, r))
                         val label = "${value.toInt()}"; val ts = 10.sp.toPx()
-                        val p = android.graphics.Paint().apply { textSize = ts; setColor(Color.White.toArgb()); isAntiAlias = true; textAlign = android.graphics.Paint.Align.CENTER }
+                        val p = Paint().apply { textSize = ts; setColor(Color.White.toArgb()); isAntiAlias = true; textAlign = Paint.Align.CENTER }
                         drawContext.canvas.nativeCanvas.drawText(label, offset.x + size.width / 2, offset.y + size.height / 2 + ts / 3, p)
                     }
                 }),
@@ -359,7 +360,7 @@ fun BarChartPreviewStackedWithCustomRenderer() {
                         drawRoundRect(color = c, topLeft = offset, size = size, cornerRadius = CornerRadius(4f, 4f))
                         drawRoundRect(color = Color.White.copy(alpha = 0.5f), topLeft = offset, size = size, style = Stroke(width = 2f), cornerRadius = CornerRadius(4f, 4f))
                         val label = "${value.toInt()}"; val ts = 10.sp.toPx()
-                        val p = android.graphics.Paint().apply { textSize = ts; setColor(Color.White.toArgb()); isAntiAlias = true; textAlign = android.graphics.Paint.Align.CENTER }
+                        val p = Paint().apply { textSize = ts; setColor(Color.White.toArgb()); isAntiAlias = true; textAlign = Paint.Align.CENTER }
                         drawContext.canvas.nativeCanvas.drawText(label, offset.x + size.width / 2, offset.y + size.height / 2 + ts / 3, p)
                     }
                 })), color = Color.Blue, showValue = false, name = "自定义堆积", settingValueText = { _, value -> "${value.toInt()}" })), width = 80.dp),

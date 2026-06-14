@@ -1,4 +1,4 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.data
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -8,7 +8,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-class LimitLine(
+data class LimitLine(
     var value: Float,
     var isDashes: Boolean = false,
     var color: Color = Color(0xffF36464),

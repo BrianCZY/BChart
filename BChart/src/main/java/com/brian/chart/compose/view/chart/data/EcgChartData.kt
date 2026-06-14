@@ -1,4 +1,4 @@
-package com.brian.chart.compose.view.chart
+package com.brian.chart.compose.view.chart.data
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
